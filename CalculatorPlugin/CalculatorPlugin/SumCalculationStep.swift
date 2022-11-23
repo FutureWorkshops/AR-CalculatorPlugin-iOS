@@ -11,7 +11,7 @@ import SwiftUI
 public struct SumCalculationItem: Codable, Identifiable {
     public let id: String
     public let label: String
-    public var text: String = ""
+    public var value: Int = 0
 }
  
 
@@ -67,17 +67,15 @@ struct SumCalculationStepContentView: View {
     @State var items: [SumCalculationItem]
     @State private var presentAlert = false
     @State private var nextItemLabel = ""
-    @State private var total = "0"
+    private var total: Int {
+        items.reduce(0, { $0 + $1.value })
+    }
 
     var body: some View {
         Form {
             Section {
-                ForEach(items) { item in
-                    SumCalculationItemView(calculator: self, item: item)
-                        .onChange(of: item.text) { newValue in
-                            print("change")
-                        }
-                        
+                ForEach($items) { $item in
+                    SumCalculationItemView(item: $item)
                 }
                 Button("Add Item") {
                     nextItemLabel = ""
@@ -96,18 +94,12 @@ struct SumCalculationStepContentView: View {
             }
             Section {
                 HStack {
-                    Text("Total")
-                        .font(.headline)
-                    Text(total)
-                        .multilineTextAlignment(.trailing)
+                    Text("Total").font(.headline)
+                    Spacer()
+                    Text("\(total)")
                 }
             }
         }
-    }
-    
-    func recalculateTotal() {
-        self.total = items.reduce(0) { $0 + ($1.text.intValue ?? 0)}.stringValue
-        print(self.total)
     }
 
     @MainActor
@@ -117,9 +109,9 @@ struct SumCalculationStepContentView: View {
 }
 
 struct SumCalculationItemView: View {
-    var calculator: SumCalculationStepContentView
-    @State var item: SumCalculationItem
-    @State var text:String = ""
+    private let formatter: NumberFormatter = NumberFormatter()
+    @State private var text: String = ""
+    @Binding var item: SumCalculationItem
     
     var body: some View {
         HStack {
@@ -129,9 +121,9 @@ struct SumCalculationItemView: View {
                 .keyboardType(.numbersAndPunctuation)
                 .multilineTextAlignment(.trailing)
                 .onChange(of: text) { newValue in
-                    calculator.recalculateTotal()
+                    item.value = formatter.number(from: newValue)?.intValue ?? 0
                 }
-        }
+        }.task { text = "\(item.value)" }
     }
 }
 
