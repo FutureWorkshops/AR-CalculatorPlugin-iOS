@@ -19,8 +19,13 @@
       "type" : "io.app-rail.calculator.sum-calculation",
       "properties" : {
         "title" : "SumCalculationStep",
-        "items" : "",
-        "text" : "Lorum Ipsum",
+        "items" : [
+            {
+                "id": "1",
+                "text": "Conveyancing"
+            }
+        ],
+        "text" : "Use this calculator to work out how much cash you need to buy your house.",
         "type" : "currency",
         "allowUserToAddItems" : false
       }
