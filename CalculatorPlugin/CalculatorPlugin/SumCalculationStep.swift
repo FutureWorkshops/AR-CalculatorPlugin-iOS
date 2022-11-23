@@ -123,7 +123,7 @@ struct SumCalculationItemView: View {
                 .onChange(of: text) { newValue in
                     item.value = formatter.number(from: newValue)?.intValue ?? 0
                 }
-        }
+        }.task { text = "\(item.value)" }
     }
 }
 
