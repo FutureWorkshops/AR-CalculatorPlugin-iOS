@@ -1,0 +1,32 @@
+source 'https://cdn.cocoapods.org/'
+source 'https://github.com/FutureWorkshops/MWPodspecs.git'
+
+workspace '<%= plugin_name %>'
+platform :ios, '<%= ios_target %>'
+
+inhibit_all_warnings!
+use_frameworks!
+
+target '<%= plugin_name %>' do
+  project '<%= plugin_name %>.xcodeproj'
+  
+<%= pod_dependencies %>
+
+  target '<%= plugin_name %>Tests' do
+    inherit! :search_paths
+  end
+end
+
+post_install do |installer|
+    installer.pods_project.targets.each do |target|
+      target.build_configurations.each do |config|
+        config.build_settings['PROVISIONING_PROFILE_SPECIFIER'] = ""
+        config.build_settings['CODE_SIGN_IDENTITY'] = ""
+        config.build_settings['DEVELOPMENT_TEAM'] = ""
+        config.build_settings['CODE_SIGN_STYLE'] = "Manual"
+        config.build_settings['BUILD_LIBRARY_FOR_DISTRIBUTION'] = 'YES'
+        config.build_settings['IPHONEOS_DEPLOYMENT_TARGET'] = "<%= ios_target %>"
+    end
+  end
+end
+

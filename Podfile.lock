@@ -1,0 +1,28 @@
+PODS:
+  - CalculatorPlugin (1.0.0):
+    - CalculatorPlugin/Core (= 1.0.0)
+  - CalculatorPlugin/Core (1.0.0):
+    - MobileWorkflow (~> 2.1.6)
+  - MobileWorkflow (2.1.6):
+    - MobileWorkflow/Core (= 2.1.6)
+  - MobileWorkflow/Core (2.1.6)
+
+DEPENDENCIES:
+  - CalculatorPlugin (from `CalculatorPlugin.podspec`)
+  - MobileWorkflow (~> 2.1.6)
+
+SPEC REPOS:
+  https://github.com/FutureWorkshops/MWPodspecs.git:
+    - MobileWorkflow
+
+EXTERNAL SOURCES:
+  CalculatorPlugin:
+    :path: CalculatorPlugin.podspec
+
+SPEC CHECKSUMS:
+  CalculatorPlugin: 49c79f7a22954490ce7fcab8076d0e04434907c6
+  MobileWorkflow: 68f65384ec75ac20ab9f94cb8b43156f763555a3
+
+PODFILE CHECKSUM: 14bce7711eb02bff5d68cd51a218f1a7e7fa8dab
+
+COCOAPODS: 1.11.3

@@ -1,0 +1,29 @@
+{
+  "servers" : [
+
+  ],
+  "id" : 0,
+  "navigation" : {
+    "style" : "list",
+    "list" : [
+      {
+        "step" : "f05c0547-2bdc-4a11-a98a-ffe8201c4f40"
+      }
+    ]
+  },
+  "systemTintColor" : "blue",
+  "name" : "Calculator",
+  "steps" : [
+    {
+      "id" : "f05c0547-2bdc-4a11-a98a-ffe8201c4f40",
+      "type" : "io.app-rail.calculator.sum-calculation",
+      "properties" : {
+        "title" : "SumCalculationStep",
+        "items" : "",
+        "text" : "Lorum Ipsum",
+        "type" : "currency",
+        "allowUserToAddItems" : false
+      }
+    }
+  ]
+}
