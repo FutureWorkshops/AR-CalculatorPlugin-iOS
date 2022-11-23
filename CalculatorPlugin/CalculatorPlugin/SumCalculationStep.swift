@@ -18,9 +18,9 @@ public struct SumCalculationItem: Codable, Identifiable, Equatable {
 public class SumCalculationStep: ObservableStep {
     let type: String
     let items: [SumCalculationItem]
-    let allowUserToAddItems: Bool?
+    let allowUserToAddItems: Bool
 
-    public init(identifier: String, type: String, text: String?, items: [SumCalculationItem], allowUserToAddItems: Bool?, session: Session, services: StepServices) {
+    public init(identifier: String, type: String, text: String?, items: [SumCalculationItem], allowUserToAddItems: Bool, session: Session, services: StepServices) {
         self.type = type
         self.items = items
         self.allowUserToAddItems = allowUserToAddItems
@@ -54,7 +54,8 @@ extension SumCalculationStep: BuildableStep {
             return try makeSumCalculatorItem(with: $0)
         }
         
-        let allowUserToAddItems = stepInfo.data.content["allowUserToAddItems"] as? Bool
+        let allowUserToAddItems = stepInfo.data.content["allowUserToAddItems"] as? Bool ?? false
+        
         return SumCalculationStep(identifier: stepInfo.data.identifier, type: type, text: text, items: calculatorItems, allowUserToAddItems: allowUserToAddItems, session: stepInfo.session, services: services)
     }
     
@@ -95,34 +96,45 @@ struct SumCalculationStepContentView: View {
     }
 
     var body: some View {
-        Form {
-            Section(header: Text(step.text ?? "")) {
-                ForEach($items) { $item in
-                    SumCalculationItemView(item: $item)
+        VStack(alignment: .leading) {
+            Form() {
+                if let text = step.text {
+                    HStack {
+                        Image(systemName: "info.circle")
+                        Text(text)
+                    }
                 }
-                Button("Add Item") {
-                    nextItemText = ""
-                    presentAlert = true
+                Section() {
+                    ForEach($items) { $item in
+                        SumCalculationItemView(item: $item)
+                    }
+                    if(step.allowUserToAddItems) {
+                        Button("Add Item") {
+                            nextItemText = ""
+                            presentAlert = true
+                        }
+                        .alert("Add Item", isPresented: $presentAlert, actions: {
+                            TextField("Name", text: $nextItemText)
+                            
+                            Button("Cancel", role: .cancel, action: {})
+                            Button("Add", action: {
+                                items.append(SumCalculationItem(id: UUID().uuidString, text: nextItemText))
+                            })
+                        }, message: {
+                            Text("Add a new item to the calculation.")
+                        })
+                    }
                 }
-                .alert("Add Item", isPresented: $presentAlert, actions: {
-                    TextField("Name", text: $nextItemText)
-
-                    Button("Cancel", role: .cancel, action: {})
-                    Button("Add", action: {
-                        items.append(SumCalculationItem(id: UUID().uuidString, text: nextItemText))
-                    })
-                }, message: {
-                    Text("Add a new item to the calculation.")
-                })
-            }
-            Section {
-                HStack {
-                    Text("Total").font(.headline)
-                    Spacer()
-                    Text("\(total)")
+                Section {
+                    HStack {
+                        Text("Total").font(.headline)
+                        Spacer()
+                        Text("\(total)")
+                    }
                 }
             }
         }
+        .background(Color(UIColor.quaternarySystemFill))
     }
 
     @MainActor
