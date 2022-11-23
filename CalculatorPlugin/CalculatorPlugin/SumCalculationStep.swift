@@ -74,10 +74,8 @@ struct SumCalculationStepContentView: View {
     var body: some View {
         Form {
             Section {
-                ForEach(items) { item in
-                    SumCalculationItemView(item: item) { newValue in
-                        mutate(item: item.id, value: newValue)
-                    }
+                ForEach($items) { $item in
+                    SumCalculationItemView(item: $item)
                 }
                 Button("Add Item") {
                     nextItemLabel = ""
@@ -103,13 +101,6 @@ struct SumCalculationStepContentView: View {
             }
         }
     }
-    
-    private func mutate(item id: String, value: Int) {
-        guard let index = items.firstIndex(where: { $0.id == id }) else { return }
-        var item = items[index]
-        item.value = value
-        items[index] = item
-    }
 
     @MainActor
     @Sendable private func select(item: SumCalculationItem) async {
@@ -118,11 +109,9 @@ struct SumCalculationStepContentView: View {
 }
 
 struct SumCalculationItemView: View {
-    @State var text: String = ""
-
-    let formatter: NumberFormatter = NumberFormatter()
-    let item: SumCalculationItem
-    let onValueChange: (Int) -> Void
+    private let formatter: NumberFormatter = NumberFormatter()
+    @State private var text: String = ""
+    @Binding var item: SumCalculationItem
     
     var body: some View {
         HStack {
@@ -132,7 +121,7 @@ struct SumCalculationItemView: View {
                 .keyboardType(.numbersAndPunctuation)
                 .multilineTextAlignment(.trailing)
                 .onChange(of: text) { newValue in
-                    onValueChange(formatter.number(from: newValue)?.intValue ?? 0)
+                    item.value = formatter.number(from: newValue)?.intValue ?? 0
                 }
         }
     }
