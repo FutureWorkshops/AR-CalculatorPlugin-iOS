@@ -109,9 +109,16 @@ struct SumCalculationStepContentView: View {
                         SumCalculationItemView(item: $item)
                     }
                     if(step.allowUserToAddItems) {
-                        Button("Add Item") {
+                        Button {
                             nextItemText = ""
-                            presentAlert = true
+                            presentAlert.toggle()
+                        } label: {
+                            HStack(alignment: .center) {
+                                Spacer()
+                                Image(systemName: "plus")
+                                Text("Add Item")
+                                Spacer()
+                            }
                         }
                         .alert("Add Item", isPresented: $presentAlert, actions: {
                             TextField("Name", text: $nextItemText)
@@ -178,9 +185,9 @@ struct SumCalculationStepContentViewPreviews: PreviewProvider {
         ).environmentObject(SumCalculationStep(
             identifier: "",
             type: "currency",
-            text: "Lorum ipsum",
+            text: "Use this calculator to work out how much cash you need to buy your house.",
             items: [],
-            allowUserToAddItems: false,
+            allowUserToAddItems: true,
             session: Session.buildEmptySession(),
             services: StepServices.buildEmptyServices()
         ))

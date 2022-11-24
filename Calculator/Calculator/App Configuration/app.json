@@ -27,7 +27,7 @@
         ],
         "text" : "Use this calculator to work out how much cash you need to buy your house.",
         "type" : "currency",
-        "allowUserToAddItems" : false
+        "allowUserToAddItems" : true
       }
     }
   ]
