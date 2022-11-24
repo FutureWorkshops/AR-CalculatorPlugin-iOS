@@ -13,7 +13,7 @@ import CurrencyText
 public struct SumCalculationItem: Codable, Identifiable, Equatable {
     public let id: String
     public let text: String
-    public var value: Int = 0
+    public var value: Double = 0
 }
 
 public enum SumCalculationType: String, CaseIterable {
@@ -105,7 +105,7 @@ struct SumCalculationStepContentView: View {
     @State var items: [SumCalculationItem]
     @State private var presentAlert = false
     @State private var nextItemText = ""
-    private var total: Int {
+    private var total: Double {
         items.reduce(0, { $0 + $1.value })
     }
 
@@ -113,8 +113,9 @@ struct SumCalculationStepContentView: View {
         VStack(alignment: .leading) {
             Form() {
                 if let text = step.text {
-                    HStack {
+                    HStack(alignment: .top) {
                         Image(systemName: "info.circle")
+                            .padding(.top, 3)
                         Text(text)
                     }
                 }
@@ -150,7 +151,7 @@ struct SumCalculationStepContentView: View {
                     HStack {
                         Text("Total").font(.headline)
                         Spacer()
-                        Text("\(total)")
+                        SumCalculationTotalView(type: step.type, total: total)
                     }
                 }
             }
@@ -164,14 +165,35 @@ struct SumCalculationStepContentView: View {
     }
 }
 
+struct SumCalculationTotalView: View {
+    let type: SumCalculationType
+    let total: Double
+    private var currencyFormatter: CurrencyFormatter {
+        CurrencyFormatter {
+            $0.currency = .poundSterling
+            $0.hasDecimals = false
+        }
+    }
+    
+    var body: some View {
+        switch type {
+        case .currency:
+            Text(currencyFormatter.string(from: total) ?? "")
+        case .number:
+            Text("\(total)")
+        }
+    }
+}
+
 struct SumCalculationCurrencyItemView: View {
     private let formatter: NumberFormatter = NumberFormatter()
     @State private var val: String = ""
+    @State private var unformattedVal: String?
     @Binding var item: SumCalculationItem
     
     var body: some View {
         
-        let formatter = CurrencyFormatter {
+        let ccyFormatter = CurrencyFormatter {
             $0.currency = .poundSterling
             $0.hasDecimals = false
         }
@@ -183,19 +205,19 @@ struct SumCalculationCurrencyItemView: View {
                 configuration: .init(
                     placeholder: "Tap to enter",
                     text: $val,
-                    formatter: formatter,
+                    unformattedText: $unformattedVal,
+                    formatter: ccyFormatter,
                     textFieldConfiguration: { textField in
                         textField.keyboardType = .numberPad
+                        textField.textAlignment = .right
                     }
                 )
             )
             .multilineTextAlignment(.trailing)
-        }.task {
-            if(item.value == 0) {
-                val = ""
-            } else {
-                val = "\(item.value)"
+            .onChange(of: val) { newVal in
+                item.value = formatter.number(from: unformattedVal ?? "0")?.doubleValue ?? 0
             }
+
         }
     }
 }
@@ -210,10 +232,10 @@ struct SumCalculationNumberItemView: View {
             Text(item.text)
                 .font(.headline)
             TextField("Tap to enter", text: $val)
-                .keyboardType(.numbersAndPunctuation)
+                .keyboardType(.numberPad)
                 .multilineTextAlignment(.trailing)
                 .onChange(of: val) { newValue in
-                    item.value = formatter.number(from: newValue)?.intValue ?? 0
+                    item.value = formatter.number(from: newValue)?.doubleValue ?? 0
                 }
         }.task {
             if(item.value == 0) {
