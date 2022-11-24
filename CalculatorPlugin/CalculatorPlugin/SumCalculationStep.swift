@@ -7,20 +7,31 @@
 import Foundation
 import MobileWorkflowCore
 import SwiftUI
+import UIKit
+import CurrencyText
 
 public struct SumCalculationItem: Codable, Identifiable, Equatable {
     public let id: String
     public let text: String
     public var value: Int = 0
 }
+
+public enum SumCalculationType: String, CaseIterable {
+    case currency = "currency"
+    case number = "number"
+
+    var typeName: String {
+        return self.rawValue
+    }
+}
  
 
 public class SumCalculationStep: ObservableStep {
-    let type: String
+    let type: SumCalculationType
     let items: [SumCalculationItem]
     let allowUserToAddItems: Bool
 
-    public init(identifier: String, type: String, text: String?, items: [SumCalculationItem], allowUserToAddItems: Bool, session: Session, services: StepServices) {
+    public init(identifier: String, type: SumCalculationType, text: String?, items: [SumCalculationItem], allowUserToAddItems: Bool, session: Session, services: StepServices) {
         self.type = type
         self.items = items
         self.allowUserToAddItems = allowUserToAddItems
@@ -43,6 +54,9 @@ extension SumCalculationStep: BuildableStep {
         guard let type = stepInfo.data.content["type"] as? String else {
             throw ParseError.invalidStepData(cause: "Mandatory type property not found")
         }
+        guard let sumCalculationType = SumCalculationType(rawValue: type) else {
+            throw ParseError.invalidStepData(cause: "Invalid type property: \(type)")
+        }
         
         let text = stepInfo.data.content["text"] as? String
         
@@ -56,7 +70,7 @@ extension SumCalculationStep: BuildableStep {
         
         let allowUserToAddItems = stepInfo.data.content["allowUserToAddItems"] as? Bool ?? false
         
-        return SumCalculationStep(identifier: stepInfo.data.identifier, type: type, text: text, items: calculatorItems, allowUserToAddItems: allowUserToAddItems, session: stepInfo.session, services: services)
+        return SumCalculationStep(identifier: stepInfo.data.identifier, type: sumCalculationType, text: text, items: calculatorItems, allowUserToAddItems: allowUserToAddItems, session: stepInfo.session, services: services)
     }
     
     private static func makeSumCalculatorItem(with item: [String: Any]) throws -> SumCalculationItem {
@@ -106,7 +120,7 @@ struct SumCalculationStepContentView: View {
                 }
                 Section() {
                     ForEach($items) { $item in
-                        SumCalculationItemView(item: $item)
+                        SumCalculationCurrencyItemView(item: $item)
                     }
                     if(step.allowUserToAddItems) {
                         Button {
@@ -150,7 +164,43 @@ struct SumCalculationStepContentView: View {
     }
 }
 
-struct SumCalculationItemView: View {
+struct SumCalculationCurrencyItemView: View {
+    private let formatter: NumberFormatter = NumberFormatter()
+    @State private var val: String = ""
+    @Binding var item: SumCalculationItem
+    
+    var body: some View {
+        
+        let formatter = CurrencyFormatter {
+            $0.currency = .poundSterling
+            $0.hasDecimals = false
+        }
+        
+        HStack {
+            Text(item.text)
+                .font(.headline)
+            CurrencyTextField(
+                configuration: .init(
+                    placeholder: "Tap to enter",
+                    text: $val,
+                    formatter: formatter,
+                    textFieldConfiguration: { textField in
+                        textField.keyboardType = .numberPad
+                    }
+                )
+            )
+            .multilineTextAlignment(.trailing)
+        }.task {
+            if(item.value == 0) {
+                val = ""
+            } else {
+                val = "\(item.value)"
+            }
+        }
+    }
+}
+
+struct SumCalculationNumberItemView: View {
     private let formatter: NumberFormatter = NumberFormatter()
     @State private var val: String = ""
     @Binding var item: SumCalculationItem
@@ -184,7 +234,7 @@ struct SumCalculationStepContentViewPreviews: PreviewProvider {
             ]
         ).environmentObject(SumCalculationStep(
             identifier: "",
-            type: "currency",
+            type: .currency,
             text: "Use this calculator to work out how much cash you need to buy your house.",
             items: [],
             allowUserToAddItems: true,

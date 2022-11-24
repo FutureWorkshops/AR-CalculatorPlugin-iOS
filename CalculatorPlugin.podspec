@@ -13,6 +13,7 @@ Pod::Spec.new do |s|
 
   s.subspec 'Core' do |cs|
     cs.dependency           'MobileWorkflow', '~> 2.1.6'
+    cs.dependency           'CurrencyText'
     cs.source_files       = 'CalculatorPlugin/CalculatorPlugin/**/*.swift'
   end
 end

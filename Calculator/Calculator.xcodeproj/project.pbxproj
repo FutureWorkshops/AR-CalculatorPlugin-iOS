@@ -337,11 +337,13 @@
 			inputPaths = (
 				"${PODS_ROOT}/Target Support Files/Pods-Calculator/Pods-Calculator-frameworks.sh",
 				"${BUILT_PRODUCTS_DIR}/CalculatorPlugin/CalculatorPlugin.framework",
+				"${BUILT_PRODUCTS_DIR}/CurrencyText/CurrencyText.framework",
 				"${PODS_XCFRAMEWORKS_BUILD_DIR}/MobileWorkflow/Core/MobileWorkflowCore.framework/MobileWorkflowCore",
 			);
 			name = "[CP] Embed Pods Frameworks";
 			outputPaths = (
 				"${TARGET_BUILD_DIR}/${FRAMEWORKS_FOLDER_PATH}/CalculatorPlugin.framework",
+				"${TARGET_BUILD_DIR}/${FRAMEWORKS_FOLDER_PATH}/CurrencyText.framework",
 				"${TARGET_BUILD_DIR}/${FRAMEWORKS_FOLDER_PATH}/MobileWorkflowCore.framework",
 			);
 			runOnlyForDeploymentPostprocessing = 0;
