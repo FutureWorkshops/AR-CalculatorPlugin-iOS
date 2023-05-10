@@ -31,7 +31,7 @@ struct SumCalculationStepContentView: View {
     var body: some View {
         VStack(alignment: .leading) {
             Form {
-                if let text = step.text {
+                if let text = step.properties.text {
                     HStack(alignment: .top) {
                         Image(systemName: "info.circle")
                             .padding(.top, 3)
