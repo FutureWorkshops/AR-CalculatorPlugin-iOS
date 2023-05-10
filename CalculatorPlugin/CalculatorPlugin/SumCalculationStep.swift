@@ -10,10 +10,30 @@ import SwiftUI
 import UIKit
 import CurrencyText
 
-public struct SumCalculationItem: Codable, Identifiable, Equatable {
+public struct CalculatorSumCalculationItem: Codable, Identifiable {
+    enum CodingKeys: String, CodingKey {
+        case id
+        case text
+        case value
+    }
+    
     public let id: String
     public let text: String
-    public var value: Double = 0
+    public var value: Double
+
+    init(text: String, id: String = UUID().uuidString, value: Double = 0.0) {
+        self.id = id
+        self.text = text
+        self.value = value
+    }
+    
+    public static func calculatorSumCalculationItem(text: String, id: String = UUID().uuidString, value: Double = 0.0) -> CalculatorSumCalculationItem {
+        CalculatorSumCalculationItem(
+            text: text,
+            id: id,
+            value: value
+        )
+    }
 }
 
 public enum SumCalculationType: String, CaseIterable {
@@ -26,63 +46,20 @@ public enum SumCalculationType: String, CaseIterable {
 }
  
 
-public class SumCalculationStep: ObservableStep {
-    let type: SumCalculationType
-    let items: [SumCalculationItem]
-    let allowUserToAddItems: Bool
+public class SumCalculationStep: ObservableStep, BuildableStepWithMetadata {
+    public let properties: CalculatorSumCalculationMetadata
+    public var type: SumCalculationType { SumCalculationType(rawValue: properties.sumCalculationType) ?? .number }
+    public var allowUserToAddItems: Bool { properties.allowUserToAddItems ?? false }
+    public var items: [CalculatorSumCalculationItem]
 
-    public init(identifier: String, type: SumCalculationType, text: String?, items: [SumCalculationItem], allowUserToAddItems: Bool, session: Session, services: StepServices) {
-        self.type = type
-        self.items = items
-        self.allowUserToAddItems = allowUserToAddItems
-        super.init(identifier: identifier, session: session, services: services)
-        self.text = text
+    public required init(properties: CalculatorSumCalculationMetadata, session: Session, services: StepServices) {
+        self.properties = properties
+        self.items = properties.items
+        super.init(identifier: properties.id, session: session, services: services)
     }
 
     public override func instantiateViewController() -> StepViewController {
         SumCalculationStepViewController(step: self)
-    }
-}
-
-extension SumCalculationStep: BuildableStep {
-
-    public static var mandatoryCodingPaths: [CodingKey] {
-        ["items"]
-    }
-
-    public static func build(stepInfo: StepInfo, services: StepServices) throws -> Step {
-        guard let type = stepInfo.data.content["type"] as? String else {
-            throw ParseError.invalidStepData(cause: "Mandatory type property not found")
-        }
-        guard let sumCalculationType = SumCalculationType(rawValue: type) else {
-            throw ParseError.invalidStepData(cause: "Invalid type property: \(type)")
-        }
-        
-        let text = stepInfo.data.content["text"] as? String
-        
-        guard let items = stepInfo.data.content["items"] as? [[String: Any]] else {
-            throw ParseError.invalidStepData(cause: "Mandatory items property not found")
-        }
-        
-        let calculatorItems: [SumCalculationItem] = try items.map {
-            return try makeSumCalculatorItem(with: $0)
-        }
-        
-        let allowUserToAddItems = stepInfo.data.content["allowUserToAddItems"] as? Bool ?? false
-        
-        return SumCalculationStep(identifier: stepInfo.data.identifier, type: sumCalculationType, text: text, items: calculatorItems, allowUserToAddItems: allowUserToAddItems, session: stepInfo.session, services: services)
-    }
-    
-    private static func makeSumCalculatorItem(with item: [String: Any]) throws -> SumCalculationItem {
-        guard let id = item.getString(key: "id") else {
-            throw ParseError.invalidStepData(cause: "Invalid id for step")
-        }
-        
-        guard let text = item["text"] as? String else {
-            throw ParseError.invalidStepData(cause: "Invalid text for step")
-        }
-        
-        return SumCalculationItem(id: id, text: text)
     }
 }
 
@@ -93,7 +70,7 @@ public class SumCalculationStepViewController: MWStepViewController {
         public override func viewDidLoad() {
         super.viewDidLoad()
         self.addCovering(childViewController: UIHostingController(
-            rootView: SumCalculationStepContentView(items: self.sumCalculationStep.items).environmentObject(self.sumCalculationStep)
+            rootView: SumCalculationStepContentView().environmentObject(self.sumCalculationStep)
         ))
     }
     
@@ -102,16 +79,15 @@ public class SumCalculationStepViewController: MWStepViewController {
 struct SumCalculationStepContentView: View {
     @EnvironmentObject var step: SumCalculationStep
     var navigator: Navigator { step.navigator }
-    @State var items: [SumCalculationItem]
     @State private var presentAlert = false
     @State private var nextItemText = ""
     private var total: Double {
-        items.reduce(0, { $0 + $1.value })
+        step.items.reduce(0, { $0 + $1.value })
     }
 
     var body: some View {
         VStack(alignment: .leading) {
-            Form() {
+            Form {
                 if let text = step.text {
                     HStack(alignment: .top) {
                         Image(systemName: "info.circle")
@@ -119,8 +95,8 @@ struct SumCalculationStepContentView: View {
                         Text(text)
                     }
                 }
-                Section() {
-                    ForEach($items) { $item in
+                Section {
+                    ForEach($step.items) { $item in
                         SumCalculationCurrencyItemView(item: $item)
                     }
                     if(step.allowUserToAddItems) {
@@ -140,7 +116,7 @@ struct SumCalculationStepContentView: View {
                             
                             Button("Cancel", role: .cancel, action: {})
                             Button("Add", action: {
-                                items.append(SumCalculationItem(id: UUID().uuidString, text: nextItemText))
+                                step.items.append(CalculatorSumCalculationItem(text: nextItemText))
                             })
                         }, message: {
                             Text("Add a new item to the calculation.")
@@ -149,7 +125,7 @@ struct SumCalculationStepContentView: View {
                 }
                 Section {
                     HStack {
-                        Text("Total").font(.headline)
+                        Text(step.resolve("Total")).font(.headline)
                         Spacer()
                         SumCalculationTotalView(type: step.type, total: total)
                     }
@@ -160,7 +136,7 @@ struct SumCalculationStepContentView: View {
     }
 
     @MainActor
-    @Sendable private func select(item: SumCalculationItem) async {
+    @Sendable private func select(item: CalculatorSumCalculationItem) async {
         navigator.continue(selecting: item)
     }
 }
@@ -189,7 +165,7 @@ struct SumCalculationCurrencyItemView: View {
     private let formatter: NumberFormatter = NumberFormatter()
     @State private var val: String = ""
     @State private var unformattedVal: String?
-    @Binding var item: SumCalculationItem
+    @Binding var item: CalculatorSumCalculationItem
     
     var body: some View {
         
@@ -225,7 +201,7 @@ struct SumCalculationCurrencyItemView: View {
 struct SumCalculationNumberItemView: View {
     private let formatter: NumberFormatter = NumberFormatter()
     @State private var val: String = ""
-    @Binding var item: SumCalculationItem
+    @Binding var item: CalculatorSumCalculationItem
     
     var body: some View {
         HStack {
@@ -249,20 +225,83 @@ struct SumCalculationNumberItemView: View {
 
 struct SumCalculationStepContentViewPreviews: PreviewProvider {
     static var previews: some View {
-        SumCalculationStepContentView(
-            items: [
-                SumCalculationItem(id: "1", text: "Removal Fees"),
-                SumCalculationItem(id: "2", text: "Conveyancing")
-            ]
-        ).environmentObject(SumCalculationStep(
-            identifier: "",
-            type: .currency,
-            text: "Use this calculator to work out how much cash you need to buy your house.",
-            items: [],
-            allowUserToAddItems: true,
-            session: Session.buildEmptySession(),
-            services: StepServices.buildEmptyServices()
-        ))
+        SumCalculationStepContentView().environmentObject(
+            SumCalculationStep(
+                properties: .calculatorSumCalculation(
+                    id: "SumCalculationStep",
+                    title: "Calculator",
+                    items: [
+                        CalculatorSumCalculationItem(text: "Removal Fees"),
+                        CalculatorSumCalculationItem(text: "Conveyancing")
+                    ],
+                    type: SumCalculationType.currency.rawValue,
+                    allowUserToAddItems: true
+                ),
+                session: Session.buildEmptySession(),
+                services: StepServices.buildEmptyServices()
+            )
+        )
     }
 }
 
+// MARK: - Step properties configuration
+public class CalculatorSumCalculationMetadata: StepMetadata {
+    enum CodingKeys: String, CodingKey {
+        case items
+        case sumCalculationType = "type"
+        case allowUserToAddItems
+        case currencyCode
+        case text
+    }
+
+    let items: [CalculatorSumCalculationItem]
+    let sumCalculationType: String
+    let allowUserToAddItems: Bool?
+    let currencyCode: String?
+    let text: String?
+
+    init(id: String, title: String, items: [CalculatorSumCalculationItem], type: String, allowUserToAddItems: Bool?, currencyCode: String?, text: String?, next: PushLinkMetadata?, links: [LinkMetadata]) {
+        self.items = items
+        self.sumCalculationType = type
+        self.allowUserToAddItems = allowUserToAddItems
+        self.currencyCode = currencyCode
+        self.text = text
+        super.init(id: id, type: "io.app-rail.calculator.sum-calculation", title: title, next: next, links: links)
+    }
+
+    public required init(from decoder: Decoder) throws {
+        let container = try decoder.container(keyedBy: CodingKeys.self)
+        self.items = try container.decode([CalculatorSumCalculationItem].self, forKey: .items)
+        self.sumCalculationType = try container.decode(String.self, forKey: .sumCalculationType)
+        self.allowUserToAddItems = try container.decodeIfPresent(Bool.self, forKey: .allowUserToAddItems)
+        self.currencyCode = try container.decodeIfPresent(String.self, forKey: .currencyCode)
+        self.text = try container.decodeIfPresent(String.self, forKey: .text)
+        try super.init(from: decoder)
+    }
+
+    public override func encode(to encoder: Encoder) throws {
+        var container = encoder.container(keyedBy: CodingKeys.self)
+        try container.encode(self.items, forKey: .items)
+        try container.encode(self.sumCalculationType, forKey: .sumCalculationType)
+        try container.encodeIfPresent(self.allowUserToAddItems, forKey: .allowUserToAddItems)
+        try container.encodeIfPresent(self.currencyCode, forKey: .currencyCode)
+        try container.encodeIfPresent(self.text, forKey: .text)
+        try super.encode(to: encoder)
+    }
+}
+
+public extension StepMetadata {
+    static func calculatorSumCalculation(id: String, title: String, items: [CalculatorSumCalculationItem], type: String, allowUserToAddItems: Bool? = nil, currencyCode: String? = nil, text: String? = nil, next: PushLinkMetadata? = nil, links: [LinkMetadata] = []) -> CalculatorSumCalculationMetadata {
+        CalculatorSumCalculationMetadata(
+            id: id,
+            title: title,
+            items: items,
+            type: type,
+            allowUserToAddItems: allowUserToAddItems,
+            currencyCode: currencyCode,
+            text: text,
+            next: next,
+            links: links
+        )
+    }
+}
