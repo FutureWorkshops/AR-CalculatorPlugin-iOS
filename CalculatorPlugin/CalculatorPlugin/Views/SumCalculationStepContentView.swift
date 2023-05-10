@@ -109,10 +109,9 @@ struct SumCalculationStepContentView: View {
         total = items.reduce(0, { $0 + $1.value })
     }
     
-    private func `continue`() {
-        Task {
-            await navigator.continue(result: SumCalculationResponse(identifier: step.identifier, items: items, total: total))
-        }
+    @MainActor
+    @Sendable private func `continue`() async {
+        await navigator.continue(result: SumCalculationResponse(identifier: step.identifier, items: items, total: total))
     }
 }
 

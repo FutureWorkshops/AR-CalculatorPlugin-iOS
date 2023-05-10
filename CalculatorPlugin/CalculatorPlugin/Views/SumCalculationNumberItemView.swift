@@ -10,7 +10,7 @@ import SwiftUI
 struct SumCalculationNumberItemView: View {
     private let formatter: NumberFormatter
     private let stringResolution: (String) -> String
-    @State private var val: String
+    @State private var val: String = ""
     @Binding var item: CalculatorSumCalculationItem
     
     init(
@@ -18,7 +18,6 @@ struct SumCalculationNumberItemView: View {
         formatter: NumberFormatter = NumberFormatter(),
         stringResolution: @escaping (String) -> String = { $0 }
     ) {
-        self.val = ""
         self._item = item
         self.formatter = formatter
         self.stringResolution = stringResolution

@@ -29,6 +29,13 @@ public struct CalculatorSumCalculationItem: Codable, Identifiable, Equatable, St
         self.value = value
     }
     
+    public init(from decoder: Decoder) throws {
+        let container = try decoder.container(keyedBy: CodingKeys.self)
+        self.id = try container.decodeIfPresent(String.self, forKey: .id) ?? UUID().uuidString
+        self.text = try container.decode(String.self, forKey: .text)
+        self.value = try container.decodeIfPresent(Double.self, forKey: .value) ?? 0.0
+    }
+    
     public static func calculatorSumCalculationItem(text: String, id: String = UUID().uuidString, value: Double = 0.0) -> CalculatorSumCalculationItem {
         CalculatorSumCalculationItem(
             text: text,
@@ -38,7 +45,7 @@ public struct CalculatorSumCalculationItem: Codable, Identifiable, Equatable, St
     }
 }
 
-public enum SumCalculationType: String, CaseIterable {
+public enum SumCalculationType: String, CaseIterable, Codable {
     case currency = "currency"
     case number = "number"
 
@@ -50,7 +57,7 @@ public enum SumCalculationType: String, CaseIterable {
 
 public class SumCalculationStep: ObservableStep, BuildableStepWithMetadata, Equatable {
     public let properties: CalculatorSumCalculationMetadata
-    public var type: SumCalculationType { SumCalculationType(rawValue: properties.sumCalculationType) ?? .number }
+    public var type: SumCalculationType { properties.sumCalculationType }
     public var allowUserToAddItems: Bool { properties.allowUserToAddItems ?? false }
     public var editMode: EditMode = .inactive
     
@@ -168,14 +175,14 @@ public class CalculatorSumCalculationMetadata: StepMetadata {
     }
 
     let items: [CalculatorSumCalculationItem]
-    let sumCalculationType: String
+    let sumCalculationType: SumCalculationType
     let allowUserToAddItems: Bool?
     let currencyCode: String?
     let text: String?
 
     init(id: String, title: String, items: [CalculatorSumCalculationItem], sumCalculationType: String, allowUserToAddItems: Bool?, currencyCode: String?, text: String?, next: PushLinkMetadata?, links: [LinkMetadata]) {
         self.items = items
-        self.sumCalculationType = sumCalculationType
+        self.sumCalculationType = SumCalculationType(rawValue: sumCalculationType) ?? .number
         self.allowUserToAddItems = allowUserToAddItems
         self.currencyCode = currencyCode
         self.text = text
@@ -185,7 +192,7 @@ public class CalculatorSumCalculationMetadata: StepMetadata {
     public required init(from decoder: Decoder) throws {
         let container = try decoder.container(keyedBy: CodingKeys.self)
         self.items = try container.decode([CalculatorSumCalculationItem].self, forKey: .items)
-        self.sumCalculationType = try container.decode(String.self, forKey: .sumCalculationType)
+        self.sumCalculationType = try container.decode(SumCalculationType.self, forKey: .sumCalculationType)
         self.allowUserToAddItems = try container.decodeIfPresent(Bool.self, forKey: .allowUserToAddItems)
         self.currencyCode = try container.decodeIfPresent(String.self, forKey: .currencyCode)
         self.text = try container.decodeIfPresent(String.self, forKey: .text)

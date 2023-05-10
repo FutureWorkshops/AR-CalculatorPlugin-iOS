@@ -1,7 +1,7 @@
 PODS:
-  - CalculatorPlugin (1.0.0):
-    - CalculatorPlugin/Core (= 1.0.0)
-  - CalculatorPlugin/Core (1.0.0):
+  - CalculatorPlugin (1.1.0):
+    - CalculatorPlugin/Core (= 1.1.0)
+  - CalculatorPlugin/Core (1.1.0):
     - CurrencyText
     - MobileWorkflow (~> 2.1.6)
   - CurrencyText (2.2.0):
@@ -14,9 +14,9 @@ PODS:
     - CurrencyText/CurrencyUITextField
   - CurrencyText/CurrencyUITextField (2.2.0):
     - CurrencyText/CurrencyFormatter
-  - MobileWorkflow (2.1.6):
-    - MobileWorkflow/Core (= 2.1.6)
-  - MobileWorkflow/Core (2.1.6)
+  - MobileWorkflow (2.1.19):
+    - MobileWorkflow/Core (= 2.1.19)
+  - MobileWorkflow/Core (2.1.19)
 
 DEPENDENCIES:
   - CalculatorPlugin (from `CalculatorPlugin.podspec`)
@@ -33,10 +33,10 @@ EXTERNAL SOURCES:
     :path: CalculatorPlugin.podspec
 
 SPEC CHECKSUMS:
-  CalculatorPlugin: 541686a836cd1f91dce0dc93e0dca81f51d62b80
+  CalculatorPlugin: d5e7bc2944b649b496b735d0faa74b60a3a48091
   CurrencyText: d6044473043b17e67baeeb35745dc265c026dda0
-  MobileWorkflow: 68f65384ec75ac20ab9f94cb8b43156f763555a3
+  MobileWorkflow: 6ee8af165ead23e02251a58c4d3a3e81eb188254
 
 PODFILE CHECKSUM: 14bce7711eb02bff5d68cd51a218f1a7e7fa8dab
 
-COCOAPODS: 1.11.3
+COCOAPODS: 1.12.1

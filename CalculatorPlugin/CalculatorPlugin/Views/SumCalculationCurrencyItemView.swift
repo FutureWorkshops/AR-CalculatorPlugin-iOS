@@ -12,8 +12,8 @@ struct SumCalculationCurrencyItemView: View {
     private let numberFormatter: NumberFormatter
     private let currencyFormatter: CurrencyFormatter
     private let stringResolution: (String) -> String
-    @State private var val: String
-    @State private var unformattedVal: String?
+    @State private var val: String = ""
+    @State private var unformattedVal: String? = nil
     @Binding var item: CalculatorSumCalculationItem
     
     
@@ -23,8 +23,6 @@ struct SumCalculationCurrencyItemView: View {
         numberFormatter: NumberFormatter = NumberFormatter(),
         stringResolution: @escaping (String) -> String = { $0 }
     ) {
-        self.val = ""
-        self.unformattedVal = nil
         self._item = item
         self.currencyFormatter = currencyFormatter
         self.numberFormatter = numberFormatter
