@@ -7,16 +7,27 @@
 
 import SwiftUI
 import MobileWorkflowCore
+import CurrencyText
 
 struct SumCalculationStepContentView: View {
     @EnvironmentObject var step: SumCalculationStep
     var navigator: Navigator { step.navigator }
-    @State private var presentAlert = false
-    @State private var nextItemText = ""
+    
+    @State private var presentAlert: Bool = false
+    @State private var nextItemText: String = ""
     @State private var items: [CalculatorSumCalculationItem] = []
-    @State private var total: Double = 0
-    @State var editMode: EditMode = .inactive
+    @State private var total: Double = 0.0
+    @State private var editMode: EditMode = .inactive
+    @State private var animateStateChange: Bool = false
+    
+    private let currencyFormatter: CurrencyFormatter
+    private let numberFormatter: NumberFormatter
 
+    init(currencyFormatter: CurrencyFormatter = .default, numberFormatter: NumberFormatter = NumberFormatter()) {
+        self.currencyFormatter = currencyFormatter
+        self.numberFormatter = numberFormatter
+    }
+    
     var body: some View {
         VStack(alignment: .leading) {
             Form {
@@ -29,7 +40,11 @@ struct SumCalculationStepContentView: View {
                 }
                 Section {
                     ForEach($items) { $item in
-                        SumCalculationCurrencyItemView(item: $item)
+                        if step.type == .currency {
+                            SumCalculationCurrencyItemView(item: $item, currencyFormatter: currencyFormatter, stringResolution: step.resolve(_:))
+                        } else {
+                            SumCalculationNumberItemView(item: $item, formatter: numberFormatter, stringResolution: step.resolve(_:))
+                        }
                     }
                     .onDelete { indexSet in
                         items.remove(atOffsets: indexSet)
@@ -48,12 +63,8 @@ struct SumCalculationStepContentView: View {
                         }
                         .alert(step.resolve("Add Item"), isPresented: $presentAlert, actions: {
                             TextField(step.resolve("Name"), text: $nextItemText)
-                            Button(step.resolve("Cancel"), role: .cancel, action: {
-                                presentAlert = false
-                            })
-                            Button(step.resolve("Add"), action: {
-                                items.append(CalculatorSumCalculationItem(text: nextItemText))
-                            })
+                            Button(step.resolve("Cancel"), role: .cancel, action: { presentAlert = false })
+                            Button(step.resolve("Add"), action: createNewEntry)
                         }, message: {
                             Text(step.resolve("Add a new item to the calculation."))
                         })
@@ -63,19 +74,28 @@ struct SumCalculationStepContentView: View {
                     HStack {
                         Text(step.resolve("Total")).font(.headline)
                         Spacer()
-                        SumCalculationTotalView(type: step.type, total: total)
+                        SumCalculationTotalView(type: step.type, total: total, currencyFormatter: currencyFormatter)
                     }
                 }
-            }.environment(\.editMode, $editMode)
+            }
         }
         .background(Color(UIColor.quaternarySystemFill))
-        .task { loadItems() }
         .onChange(of: items, perform: calculateTotal(items:))
         .onReceive(NotificationCenter.default.publisher(for: Notification.Name.editing), perform: checkEditingNotification(notification:))
+        .task { loadItems() }
+        .animation(animateStateChange ? .default : nil)
+        .environment(\.editMode, $editMode)
     }
     
     private func checkEditingNotification(notification: Notification) {
+        animateStateChange = true
         editMode = notification.isEditing(stepId: step.identifier) ? .active : .inactive
+    }
+    
+    private func createNewEntry() {
+        animateStateChange = true
+        items.append(CalculatorSumCalculationItem(text: nextItemText))
+        nextItemText = ""
     }
     
     private func loadItems() {

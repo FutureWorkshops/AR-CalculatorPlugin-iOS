@@ -8,15 +8,27 @@
 import SwiftUI
 
 struct SumCalculationNumberItemView: View {
-    private let formatter: NumberFormatter = NumberFormatter()
-    @State private var val: String = ""
+    private let formatter: NumberFormatter
+    private let stringResolution: (String) -> String
+    @State private var val: String
     @Binding var item: CalculatorSumCalculationItem
+    
+    init(
+        item: Binding<CalculatorSumCalculationItem>,
+        formatter: NumberFormatter = NumberFormatter(),
+        stringResolution: @escaping (String) -> String = { $0 }
+    ) {
+        self.val = ""
+        self._item = item
+        self.formatter = formatter
+        self.stringResolution = stringResolution
+    }
     
     var body: some View {
         HStack {
-            Text(item.text)
+            Text(stringResolution(item.text))
                 .font(.headline)
-            TextField("Tap to enter", text: $val)
+            TextField(stringResolution("Tap to enter"), text: $val)
                 .keyboardType(.numberPad)
                 .multilineTextAlignment(.trailing)
                 .onChange(of: val) { newValue in

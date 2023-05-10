@@ -9,27 +9,38 @@ import SwiftUI
 import CurrencyText
 
 struct SumCalculationCurrencyItemView: View {
-    private let formatter: NumberFormatter = NumberFormatter()
-    @State private var val: String = ""
+    private let numberFormatter: NumberFormatter
+    private let currencyFormatter: CurrencyFormatter
+    private let stringResolution: (String) -> String
+    @State private var val: String
     @State private var unformattedVal: String?
     @Binding var item: CalculatorSumCalculationItem
     
+    
+    init(
+        item: Binding<CalculatorSumCalculationItem>,
+        currencyFormatter: CurrencyFormatter = .default,
+        numberFormatter: NumberFormatter = NumberFormatter(),
+        stringResolution: @escaping (String) -> String = { $0 }
+    ) {
+        self.val = ""
+        self.unformattedVal = nil
+        self._item = item
+        self.currencyFormatter = currencyFormatter
+        self.numberFormatter = numberFormatter
+        self.stringResolution = stringResolution
+    }
+    
     var body: some View {
-        
-        let ccyFormatter = CurrencyFormatter {
-            $0.currency = .poundSterling
-            $0.hasDecimals = false
-        }
-        
         HStack {
-            Text(item.text)
+            Text(stringResolution(item.text))
                 .font(.headline)
             CurrencyTextField(
                 configuration: .init(
-                    placeholder: "Tap to enter",
+                    placeholder: stringResolution("Tap to enter"),
                     text: $val,
                     unformattedText: $unformattedVal,
-                    formatter: ccyFormatter,
+                    formatter: currencyFormatter,
                     textFieldConfiguration: { textField in
                         textField.keyboardType = .numberPad
                         textField.textAlignment = .right
@@ -38,7 +49,7 @@ struct SumCalculationCurrencyItemView: View {
             )
             .multilineTextAlignment(.trailing)
             .onChange(of: val) { newVal in
-                item.value = formatter.number(from: unformattedVal ?? "0")?.doubleValue ?? 0
+                item.value = numberFormatter.number(from: unformattedVal ?? "0")?.doubleValue ?? 0
             }
 
         }

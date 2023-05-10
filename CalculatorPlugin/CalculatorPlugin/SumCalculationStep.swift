@@ -10,7 +10,7 @@ import SwiftUI
 import UIKit
 import CurrencyText
 
-public struct CalculatorSumCalculationItem: Codable, Identifiable, Equatable {
+public struct CalculatorSumCalculationItem: Codable, Identifiable, Equatable, CustomStringConvertible {
     enum CodingKeys: String, CodingKey {
         case id
         case text
@@ -20,6 +20,10 @@ public struct CalculatorSumCalculationItem: Codable, Identifiable, Equatable {
     public let id: String
     public let text: String
     public var value: Double
+    
+    public var description: String {
+        "\(text): \(value)"
+    }
     
     init(text: String, id: String = UUID().uuidString, value: Double = 0.0) {
         self.id = id
@@ -79,6 +83,8 @@ public class SumCalculationStepViewController: MWStepViewController {
     
     public override func updateBarButtonItems() {
         super.updateBarButtonItems()
+        guard self.sumCalculationStep.allowUserToAddItems else { return }
+        
         var items = self.navigationItem.rightBarButtonItems
         items?.append(self.editButtonItem)
         self.navigationItem.rightBarButtonItems = items
@@ -109,6 +115,15 @@ internal extension Notification {
     func isEditing(stepId: String) -> Bool {
         guard userInfo?[Notification.stepIdLabel] as? String == stepId else { return false }
         return userInfo?[Notification.editingLabel] as? Bool ?? false
+    }
+}
+
+internal extension CurrencyFormatter {
+    static var `default`: CurrencyFormatter {
+        CurrencyFormatter {
+            $0.currency = .poundSterling
+            $0.hasDecimals = false
+        }
     }
 }
 

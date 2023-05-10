@@ -11,11 +11,12 @@ import CurrencyText
 struct SumCalculationTotalView: View {
     let type: SumCalculationType
     let total: Double
-    private var currencyFormatter: CurrencyFormatter {
-        CurrencyFormatter {
-            $0.currency = .poundSterling
-            $0.hasDecimals = false
-        }
+    let currencyFormatter: CurrencyFormatter
+    
+    init(type: SumCalculationType, total: Double, currencyFormatter: CurrencyFormatter = .default) {
+        self.type = type
+        self.total = total
+        self.currencyFormatter = currencyFormatter
     }
     
     var body: some View {
