@@ -82,7 +82,9 @@ public class SumCalculationStepViewController: MWStepViewController {
     public override func viewDidLoad() {
         super.viewDidLoad()
         self.addCovering(childViewController: UIHostingController(
-            rootView: SumCalculationStepContentView().environmentObject(self.sumCalculationStep)
+            rootView: SumCalculationStepContentView(
+                currencyFormatter: .default(currencyCode: self.sumCalculationStep.properties.currencyCode)
+            ).environmentObject(self.sumCalculationStep)
         ))
     }
     
@@ -124,10 +126,10 @@ internal extension Notification {
 }
 
 internal extension CurrencyFormatter {
-    static var `default`: CurrencyFormatter {
+    static func `default`(currencyCode: String? = nil, hasDecimals: Bool = false) -> CurrencyFormatter {
         CurrencyFormatter {
-            $0.currency = .poundSterling
-            $0.hasDecimals = false
+            $0.hasDecimals = hasDecimals
+            $0.currencyCode = currencyCode ?? "GBP"
         }
     }
 }

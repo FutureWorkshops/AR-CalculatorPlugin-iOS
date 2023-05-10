@@ -23,7 +23,7 @@ struct SumCalculationStepContentView: View {
     private let currencyFormatter: CurrencyFormatter
     private let numberFormatter: NumberFormatter
 
-    init(currencyFormatter: CurrencyFormatter = .default, numberFormatter: NumberFormatter = NumberFormatter()) {
+    init(currencyFormatter: CurrencyFormatter = .default(), numberFormatter: NumberFormatter = NumberFormatter()) {
         self.currencyFormatter = currencyFormatter
         self.numberFormatter = numberFormatter
     }
