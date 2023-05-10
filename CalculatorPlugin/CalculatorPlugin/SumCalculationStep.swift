@@ -86,7 +86,29 @@ public class SumCalculationStepViewController: MWStepViewController {
     
     public override func setEditing(_ editing: Bool, animated: Bool) {
         super.setEditing(editing, animated: animated)
-        //TODO: Link edit mode to underlying view
+        NotificationCenter.default.post(Notification(
+            name: .editing,
+            object: nil,
+            userInfo: Notification.editingInfo(editing: editing, step: self.sumCalculationStep)
+        ))
+    }
+}
+
+internal extension Notification.Name {
+    static let editing = Notification.Name("SumCalculationStepViewController.setEditing")
+}
+
+internal extension Notification {
+    static let editingLabel = "editing"
+    static let stepIdLabel = "stepId"
+    
+    static func editingInfo(editing: Bool, step: ObservableStep) -> [AnyHashable: Any] {
+        [Notification.editingLabel: editing, Notification.stepIdLabel: step.identifier]
+    }
+    
+    func isEditing(stepId: String) -> Bool {
+        guard userInfo?[Notification.stepIdLabel] as? String == stepId else { return false }
+        return userInfo?[Notification.editingLabel] as? Bool ?? false
     }
 }
 

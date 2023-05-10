@@ -71,6 +71,11 @@ struct SumCalculationStepContentView: View {
         .background(Color(UIColor.quaternarySystemFill))
         .task { loadItems() }
         .onChange(of: items, perform: calculateTotal(items:))
+        .onReceive(NotificationCenter.default.publisher(for: Notification.Name.editing), perform: checkEditingNotification(notification:))
+    }
+    
+    private func checkEditingNotification(notification: Notification) {
+        editMode = notification.isEditing(stepId: step.identifier) ? .active : .inactive
     }
     
     private func loadItems() {
