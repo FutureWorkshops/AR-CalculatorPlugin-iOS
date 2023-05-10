@@ -125,11 +125,23 @@ internal extension Notification {
     }
 }
 
+extension Locale {
+    var currencyIdentifier: String? {
+        let locale = Locale.autoupdatingCurrent
+        if #available(iOS 16, *) {
+            return locale.currency?.identifier
+        } else {
+            return locale.currencyCode
+        }
+    }
+}
+
 internal extension CurrencyFormatter {
-    static func `default`(currencyCode: String? = nil, hasDecimals: Bool = false) -> CurrencyFormatter {
+    static func `default`(currencyCode: String? = nil, hasDecimals: Bool = false, locale: Locale = .autoupdatingCurrent) -> CurrencyFormatter {
         CurrencyFormatter {
             $0.hasDecimals = hasDecimals
-            $0.currencyCode = currencyCode ?? "GBP"
+            $0.currencyCode = (currencyCode ?? locale.currencyIdentifier) ?? $0.currencyCode
+            $0.locale = locale
         }
     }
 }
