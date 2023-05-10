@@ -10,13 +10,42 @@ import SwiftUI
 import UIKit
 import CurrencyText
 
-public struct SumCalculationItem: Codable, Identifiable, Equatable {
+public struct CalculatorSumCalculationItem: Codable, Identifiable, Equatable, StringConvertableValue {
+    enum CodingKeys: String, CodingKey {
+        case id
+        case text
+        case value
+    }
+    
     public let id: String
     public let text: String
-    public var value: Double = 0
+    public var value: Double
+    
+    public var stringValue: String { "\(text): \(value)" }
+    
+    init(text: String, id: String = UUID().uuidString, value: Double = 0.0) {
+        self.id = id
+        self.text = text
+        self.value = value
+    }
+    
+    public init(from decoder: Decoder) throws {
+        let container = try decoder.container(keyedBy: CodingKeys.self)
+        self.id = try container.decodeIfPresent(String.self, forKey: .id) ?? UUID().uuidString
+        self.text = try container.decode(String.self, forKey: .text)
+        self.value = try container.decodeIfPresent(Double.self, forKey: .value) ?? 0.0
+    }
+    
+    public static func calculatorSumCalculationItem(text: String, id: String = UUID().uuidString, value: Double = 0.0) -> CalculatorSumCalculationItem {
+        CalculatorSumCalculationItem(
+            text: text,
+            id: id,
+            value: value
+        )
+    }
 }
 
-public enum SumCalculationType: String, CaseIterable {
+public enum SumCalculationType: String, CaseIterable, Codable {
     case currency = "currency"
     case number = "number"
 
@@ -26,17 +55,19 @@ public enum SumCalculationType: String, CaseIterable {
 }
  
 
-public class SumCalculationStep: ObservableStep {
-    let type: SumCalculationType
-    let items: [SumCalculationItem]
-    let allowUserToAddItems: Bool
-
-    public init(identifier: String, type: SumCalculationType, text: String?, items: [SumCalculationItem], allowUserToAddItems: Bool, session: Session, services: StepServices) {
-        self.type = type
-        self.items = items
-        self.allowUserToAddItems = allowUserToAddItems
-        super.init(identifier: identifier, session: session, services: services)
-        self.text = text
+public class SumCalculationStep: ObservableStep, BuildableStepWithMetadata, Equatable {
+    public let properties: CalculatorSumCalculationMetadata
+    public var type: SumCalculationType { properties.sumCalculationType }
+    public var allowUserToAddItems: Bool { properties.allowUserToAddItems ?? false }
+    public var editMode: EditMode = .inactive
+    
+    public static func == (lhs: SumCalculationStep, rhs: SumCalculationStep) -> Bool {
+        lhs.identifier == rhs.identifier && lhs.properties.items == rhs.properties.items && lhs.editMode == rhs.editMode
+    }
+    
+    public required init(properties: CalculatorSumCalculationMetadata, session: Session, services: StepServices) {
+        self.properties = properties
+        super.init(identifier: properties.id, session: session, services: services)
     }
 
     public override func instantiateViewController() -> StepViewController {
@@ -44,225 +75,153 @@ public class SumCalculationStep: ObservableStep {
     }
 }
 
-extension SumCalculationStep: BuildableStep {
-
-    public static var mandatoryCodingPaths: [CodingKey] {
-        ["items"]
-    }
-
-    public static func build(stepInfo: StepInfo, services: StepServices) throws -> Step {
-        guard let type = stepInfo.data.content["type"] as? String else {
-            throw ParseError.invalidStepData(cause: "Mandatory type property not found")
-        }
-        guard let sumCalculationType = SumCalculationType(rawValue: type) else {
-            throw ParseError.invalidStepData(cause: "Invalid type property: \(type)")
-        }
-        
-        let text = stepInfo.data.content["text"] as? String
-        
-        guard let items = stepInfo.data.content["items"] as? [[String: Any]] else {
-            throw ParseError.invalidStepData(cause: "Mandatory items property not found")
-        }
-        
-        let calculatorItems: [SumCalculationItem] = try items.map {
-            return try makeSumCalculatorItem(with: $0)
-        }
-        
-        let allowUserToAddItems = stepInfo.data.content["allowUserToAddItems"] as? Bool ?? false
-        
-        return SumCalculationStep(identifier: stepInfo.data.identifier, type: sumCalculationType, text: text, items: calculatorItems, allowUserToAddItems: allowUserToAddItems, session: stepInfo.session, services: services)
-    }
-    
-    private static func makeSumCalculatorItem(with item: [String: Any]) throws -> SumCalculationItem {
-        guard let id = item.getString(key: "id") else {
-            throw ParseError.invalidStepData(cause: "Invalid id for step")
-        }
-        
-        guard let text = item["text"] as? String else {
-            throw ParseError.invalidStepData(cause: "Invalid text for step")
-        }
-        
-        return SumCalculationItem(id: id, text: text)
-    }
-}
-
 public class SumCalculationStepViewController: MWStepViewController {
     public override var titleMode: StepViewControllerTitleMode { .largeTitle }
     var sumCalculationStep: SumCalculationStep { self.step as! SumCalculationStep }
     
-        public override func viewDidLoad() {
+    public override func viewDidLoad() {
         super.viewDidLoad()
         self.addCovering(childViewController: UIHostingController(
-            rootView: SumCalculationStepContentView(items: self.sumCalculationStep.items).environmentObject(self.sumCalculationStep)
+            rootView: SumCalculationStepContentView().environmentObject(self.sumCalculationStep)
         ))
     }
     
-}
-
-struct SumCalculationStepContentView: View {
-    @EnvironmentObject var step: SumCalculationStep
-    var navigator: Navigator { step.navigator }
-    @State var items: [SumCalculationItem]
-    @State private var presentAlert = false
-    @State private var nextItemText = ""
-    private var total: Double {
-        items.reduce(0, { $0 + $1.value })
+    public override func updateBarButtonItems() {
+        super.updateBarButtonItems()
+        guard self.sumCalculationStep.allowUserToAddItems else { return }
+        
+        var items = self.navigationItem.rightBarButtonItems
+        items?.append(self.editButtonItem)
+        self.navigationItem.rightBarButtonItems = items
     }
-
-    var body: some View {
-        VStack(alignment: .leading) {
-            Form() {
-                if let text = step.text {
-                    HStack(alignment: .top) {
-                        Image(systemName: "info.circle")
-                            .padding(.top, 3)
-                        Text(text)
-                    }
-                }
-                Section() {
-                    ForEach($items) { $item in
-                        SumCalculationCurrencyItemView(item: $item)
-                    }
-                    if(step.allowUserToAddItems) {
-                        Button {
-                            nextItemText = ""
-                            presentAlert.toggle()
-                        } label: {
-                            HStack(alignment: .center) {
-                                Spacer()
-                                Image(systemName: "plus")
-                                Text("Add Item")
-                                Spacer()
-                            }
-                        }
-                        .alert("Add Item", isPresented: $presentAlert, actions: {
-                            TextField("Name", text: $nextItemText)
-                            
-                            Button("Cancel", role: .cancel, action: {})
-                            Button("Add", action: {
-                                items.append(SumCalculationItem(id: UUID().uuidString, text: nextItemText))
-                            })
-                        }, message: {
-                            Text("Add a new item to the calculation.")
-                        })
-                    }
-                }
-                Section {
-                    HStack {
-                        Text("Total").font(.headline)
-                        Spacer()
-                        SumCalculationTotalView(type: step.type, total: total)
-                    }
-                }
-            }
-        }
-        .background(Color(UIColor.quaternarySystemFill))
-    }
-
-    @MainActor
-    @Sendable private func select(item: SumCalculationItem) async {
-        navigator.continue(selecting: item)
+    
+    public override func setEditing(_ editing: Bool, animated: Bool) {
+        super.setEditing(editing, animated: animated)
+        NotificationCenter.default.post(Notification(
+            name: .editing,
+            object: nil,
+            userInfo: Notification.editingInfo(editing: editing, step: self.sumCalculationStep)
+        ))
     }
 }
 
-struct SumCalculationTotalView: View {
-    let type: SumCalculationType
-    let total: Double
-    private var currencyFormatter: CurrencyFormatter {
+internal extension Notification.Name {
+    static let editing = Notification.Name("SumCalculationStepViewController.setEditing")
+}
+
+internal extension Notification {
+    static let editingLabel = "editing"
+    static let stepIdLabel = "stepId"
+    
+    static func editingInfo(editing: Bool, step: ObservableStep) -> [AnyHashable: Any] {
+        [Notification.editingLabel: editing, Notification.stepIdLabel: step.identifier]
+    }
+    
+    func isEditing(stepId: String) -> Bool {
+        guard userInfo?[Notification.stepIdLabel] as? String == stepId else { return false }
+        return userInfo?[Notification.editingLabel] as? Bool ?? false
+    }
+}
+
+internal extension CurrencyFormatter {
+    static var `default`: CurrencyFormatter {
         CurrencyFormatter {
             $0.currency = .poundSterling
             $0.hasDecimals = false
         }
     }
+}
+
+public class SumCalculationResponse: Codable, StepResult, ValueProvider, JSONRepresentable {
+    public var identifier: String
+    public let items: [CalculatorSumCalculationItem]
+    public let total: Double
     
-    var body: some View {
-        switch type {
-        case .currency:
-            Text(currencyFormatter.string(from: total) ?? "")
-        case .number:
-            Text("\(total)")
+    public var jsonContent: String? {
+        if let data = try? JSONEncoder().encode(self) {
+            return String(data: data, encoding: .utf8)
+        } else {
+            return nil
         }
     }
-}
-
-struct SumCalculationCurrencyItemView: View {
-    private let formatter: NumberFormatter = NumberFormatter()
-    @State private var val: String = ""
-    @State private var unformattedVal: String?
-    @Binding var item: SumCalculationItem
     
-    var body: some View {
-        
-        let ccyFormatter = CurrencyFormatter {
-            $0.currency = .poundSterling
-            $0.hasDecimals = false
-        }
-        
-        HStack {
-            Text(item.text)
-                .font(.headline)
-            CurrencyTextField(
-                configuration: .init(
-                    placeholder: "Tap to enter",
-                    text: $val,
-                    unformattedText: $unformattedVal,
-                    formatter: ccyFormatter,
-                    textFieldConfiguration: { textField in
-                        textField.keyboardType = .numberPad
-                        textField.textAlignment = .right
-                    }
-                )
-            )
-            .multilineTextAlignment(.trailing)
-            .onChange(of: val) { newVal in
-                item.value = formatter.number(from: unformattedVal ?? "0")?.doubleValue ?? 0
-            }
-
-        }
+    init(identifier: String, items: [CalculatorSumCalculationItem], total: Double) {
+        self.identifier = identifier
+        self.items = items
+        self.total = total
     }
-}
-
-struct SumCalculationNumberItemView: View {
-    private let formatter: NumberFormatter = NumberFormatter()
-    @State private var val: String = ""
-    @Binding var item: SumCalculationItem
     
-    var body: some View {
-        HStack {
-            Text(item.text)
-                .font(.headline)
-            TextField("Tap to enter", text: $val)
-                .keyboardType(.numberPad)
-                .multilineTextAlignment(.trailing)
-                .onChange(of: val) { newValue in
-                    item.value = formatter.number(from: newValue)?.doubleValue ?? 0
-                }
-        }.task {
-            if(item.value == 0) {
-                val = ""
-            } else {
-                val = "\(item.value)"
-            }
+    public func fetchValue(for path: String) -> Any? {
+        switch path {
+        case "items": return self.items
+        case "total": return self.total
+        default: return nil
         }
     }
-}
-
-struct SumCalculationStepContentViewPreviews: PreviewProvider {
-    static var previews: some View {
-        SumCalculationStepContentView(
-            items: [
-                SumCalculationItem(id: "1", text: "Removal Fees"),
-                SumCalculationItem(id: "2", text: "Conveyancing")
-            ]
-        ).environmentObject(SumCalculationStep(
-            identifier: "",
-            type: .currency,
-            text: "Use this calculator to work out how much cash you need to buy your house.",
-            items: [],
-            allowUserToAddItems: true,
-            session: Session.buildEmptySession(),
-            services: StepServices.buildEmptyServices()
-        ))
+    
+    public func fetchProvider(for path: String) -> ValueProvider? {
+        return self.fetchValue(for: path) as? ValueProvider
     }
 }
 
+// MARK: - Step properties configuration
+public class CalculatorSumCalculationMetadata: StepMetadata {
+    enum CodingKeys: String, CodingKey {
+        case items
+        case sumCalculationType
+        case allowUserToAddItems
+        case currencyCode
+        case text
+    }
+
+    let items: [CalculatorSumCalculationItem]
+    let sumCalculationType: SumCalculationType
+    let allowUserToAddItems: Bool?
+    let currencyCode: String?
+    let text: String?
+
+    init(id: String, title: String, items: [CalculatorSumCalculationItem], sumCalculationType: String, allowUserToAddItems: Bool?, currencyCode: String?, text: String?, next: PushLinkMetadata?, links: [LinkMetadata]) {
+        self.items = items
+        self.sumCalculationType = SumCalculationType(rawValue: sumCalculationType) ?? .number
+        self.allowUserToAddItems = allowUserToAddItems
+        self.currencyCode = currencyCode
+        self.text = text
+        super.init(id: id, type: "io.app-rail.calculator.sum-calculation", title: title, next: next, links: links)
+    }
+
+    public required init(from decoder: Decoder) throws {
+        let container = try decoder.container(keyedBy: CodingKeys.self)
+        self.items = try container.decode([CalculatorSumCalculationItem].self, forKey: .items)
+        self.sumCalculationType = try container.decode(SumCalculationType.self, forKey: .sumCalculationType)
+        self.allowUserToAddItems = try container.decodeIfPresent(Bool.self, forKey: .allowUserToAddItems)
+        self.currencyCode = try container.decodeIfPresent(String.self, forKey: .currencyCode)
+        self.text = try container.decodeIfPresent(String.self, forKey: .text)
+        try super.init(from: decoder)
+    }
+
+    public override func encode(to encoder: Encoder) throws {
+        var container = encoder.container(keyedBy: CodingKeys.self)
+        try container.encode(self.items, forKey: .items)
+        try container.encode(self.sumCalculationType, forKey: .sumCalculationType)
+        try container.encodeIfPresent(self.allowUserToAddItems, forKey: .allowUserToAddItems)
+        try container.encodeIfPresent(self.currencyCode, forKey: .currencyCode)
+        try container.encodeIfPresent(self.text, forKey: .text)
+        try super.encode(to: encoder)
+    }
+}
+
+public extension StepMetadata {
+    static func calculatorSumCalculation(id: String, title: String, items: [CalculatorSumCalculationItem], sumCalculationType: String, allowUserToAddItems: Bool? = nil, currencyCode: String? = nil, text: String? = nil, next: PushLinkMetadata? = nil, links: [LinkMetadata] = []) -> CalculatorSumCalculationMetadata {
+        CalculatorSumCalculationMetadata(
+            id: id,
+            title: title,
+            items: items,
+            sumCalculationType: sumCalculationType,
+            allowUserToAddItems: allowUserToAddItems,
+            currencyCode: currencyCode,
+            text: text,
+            next: next,
+            links: links
+        )
+    }
+}

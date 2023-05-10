@@ -9,11 +9,14 @@
 /* Begin PBXBuildFile section */
 		0422BD1ADC8560B052CAC581 /* Pods_MobileWorkflowForms_CalculatorPlugin.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = B39807645B3B438013A36EC1 /* Pods_MobileWorkflowForms_CalculatorPlugin.framework */; };
 		083D54EDA70EDDD383E54706 /* Pods_CalculatorPluginTests.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = B93A8E8EC15ACB09E04222EB /* Pods_CalculatorPluginTests.framework */; };
+		790C14960526FCBB5BAB8F54 /* CalculatorPluginStruct.swift in Sources */ = {isa = PBXBuildFile; fileRef = 727AF7E2DE4CBED14E351191 /* CalculatorPluginStruct.swift */; };
+		803D864ED39F2CF3F3C66369 /* SumCalculationStep.swift in Sources */ = {isa = PBXBuildFile; fileRef = 62DD2D8E87F061F49D4BFDA0 /* SumCalculationStep.swift */; };
+		990EDFD278FF4AB150CA5CFA /* SumCalculationStepContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 22A4F3470BEAF5305C29C199 /* SumCalculationStepContentView.swift */; };
 		B11F5FE3262893DE00EF2283 /* CalculatorPlugin.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = B11F5FD9262893DE00EF2283 /* CalculatorPlugin.framework */; };
 		B11F5FE8262893DE00EF2283 /* CalculatorPluginTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = B11F5FE7262893DE00EF2283 /* CalculatorPluginTests.swift */; };
-		B11F5FEA262893DE00EF2283 /* CalculatorPlugin.h in Headers */ = {isa = PBXBuildFile; fileRef = B11F5FDC262893DE00EF2283 /* CalculatorPlugin.h */; settings = {ATTRIBUTES = (Public, ); }; };
-		B11F601526289B5A00EF2283 /* CalculatorPluginStruct.swift in Sources */ = {isa = PBXBuildFile; fileRef = B11F601426289B5A00EF2283 /* CalculatorPluginStruct.swift */; };
-		C2796E6D279BD11645523905 /* SumCalculationStep.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7640D9A2534E9A01A77C9890 /* SumCalculationStep.swift */; };
+		E3EEF3B7398DC66E19B7510B /* SumCalculationTotalView.swift in Sources */ = {isa = PBXBuildFile; fileRef = C727FED6D261D4FB3E9E3612 /* SumCalculationTotalView.swift */; };
+		EB7FAAC41D8BA04217584A1B /* SumCalculationCurrencyItemView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9D3EA6A0635B6BEE587D4CF4 /* SumCalculationCurrencyItemView.swift */; };
+		EB9ABC284EB10DC0E2CC8666 /* SumCalculationNumberItemView.swift in Sources */ = {isa = PBXBuildFile; fileRef = D7B7833AA4E8C684639EAC06 /* SumCalculationNumberItemView.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -27,19 +30,23 @@
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXFileReference section */
+		2175159079A5E0D972D06C8C /* Info.plist */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
+		22A4F3470BEAF5305C29C199 /* SumCalculationStepContentView.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = SumCalculationStepContentView.swift; sourceTree = "<group>"; };
 		4E65B496A70A5B97E9DCBAB7 /* Pods-CalculatorPluginTests.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-CalculatorPluginTests.release.xcconfig"; path = "Target Support Files/Pods-CalculatorPluginTests/Pods-CalculatorPluginTests.release.xcconfig"; sourceTree = "<group>"; };
-		7640D9A2534E9A01A77C9890 /* SumCalculationStep.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = SumCalculationStep.swift; sourceTree = "<group>"; };
+		5313C029ADE9630BD16F0C00 /* CalculatorPlugin.h */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.c.h; path = CalculatorPlugin.h; sourceTree = "<group>"; };
+		62DD2D8E87F061F49D4BFDA0 /* SumCalculationStep.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = SumCalculationStep.swift; sourceTree = "<group>"; };
+		727AF7E2DE4CBED14E351191 /* CalculatorPluginStruct.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = CalculatorPluginStruct.swift; sourceTree = "<group>"; };
 		88CF9060167E15DD2408A04F /* Pods-MobileWorkflowForms-CalculatorPlugin.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-MobileWorkflowForms-CalculatorPlugin.debug.xcconfig"; path = "Target Support Files/Pods-MobileWorkflowForms-CalculatorPlugin/Pods-MobileWorkflowForms-CalculatorPlugin.debug.xcconfig"; sourceTree = "<group>"; };
+		9D3EA6A0635B6BEE587D4CF4 /* SumCalculationCurrencyItemView.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = SumCalculationCurrencyItemView.swift; sourceTree = "<group>"; };
 		B11F5FD9262893DE00EF2283 /* CalculatorPlugin.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = CalculatorPlugin.framework; sourceTree = BUILT_PRODUCTS_DIR; };
-		B11F5FDC262893DE00EF2283 /* CalculatorPlugin.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = CalculatorPlugin.h; sourceTree = "<group>"; };
-		B11F5FDD262893DE00EF2283 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		B11F5FE2262893DE00EF2283 /* CalculatorPluginTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = CalculatorPluginTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		B11F5FE7262893DE00EF2283 /* CalculatorPluginTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CalculatorPluginTests.swift; sourceTree = "<group>"; };
 		B11F5FE9262893DE00EF2283 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
-		B11F601426289B5A00EF2283 /* CalculatorPluginStruct.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CalculatorPluginStruct.swift; sourceTree = "<group>"; };
 		B39807645B3B438013A36EC1 /* Pods_MobileWorkflowForms_CalculatorPlugin.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Pods_MobileWorkflowForms_CalculatorPlugin.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		B93A8E8EC15ACB09E04222EB /* Pods_CalculatorPluginTests.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Pods_CalculatorPluginTests.framework; sourceTree = BUILT_PRODUCTS_DIR; };
+		C727FED6D261D4FB3E9E3612 /* SumCalculationTotalView.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = SumCalculationTotalView.swift; sourceTree = "<group>"; };
 		D26EAA83FFE760D3D537836E /* Pods-MobileWorkflowForms-CalculatorPlugin.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-MobileWorkflowForms-CalculatorPlugin.release.xcconfig"; path = "Target Support Files/Pods-MobileWorkflowForms-CalculatorPlugin/Pods-MobileWorkflowForms-CalculatorPlugin.release.xcconfig"; sourceTree = "<group>"; };
+		D7B7833AA4E8C684639EAC06 /* SumCalculationNumberItemView.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = SumCalculationNumberItemView.swift; sourceTree = "<group>"; };
 		F6E5D39E427F1FED73B7987D /* Pods-CalculatorPluginTests.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-CalculatorPluginTests.debug.xcconfig"; path = "Target Support Files/Pods-CalculatorPluginTests/Pods-CalculatorPluginTests.debug.xcconfig"; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
@@ -64,6 +71,18 @@
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
+		1BDE4197370E4C1CED683B01 /* Views */ = {
+			isa = PBXGroup;
+			children = (
+				C727FED6D261D4FB3E9E3612 /* SumCalculationTotalView.swift */,
+				9D3EA6A0635B6BEE587D4CF4 /* SumCalculationCurrencyItemView.swift */,
+				D7B7833AA4E8C684639EAC06 /* SumCalculationNumberItemView.swift */,
+				22A4F3470BEAF5305C29C199 /* SumCalculationStepContentView.swift */,
+			);
+			name = Views;
+			path = Views;
+			sourceTree = "<group>";
+		};
 		446F3EA792A0CC949BDBEE90 /* Pods */ = {
 			isa = PBXGroup;
 			children = (
@@ -108,10 +127,11 @@
 		B11F5FDB262893DE00EF2283 /* CalculatorPlugin */ = {
 			isa = PBXGroup;
 			children = (
-				B11F601426289B5A00EF2283 /* CalculatorPluginStruct.swift */,
-				B11F5FDC262893DE00EF2283 /* CalculatorPlugin.h */,
-				B11F5FDD262893DE00EF2283 /* Info.plist */,
-				7640D9A2534E9A01A77C9890 /* SumCalculationStep.swift */,
+				5313C029ADE9630BD16F0C00 /* CalculatorPlugin.h */,
+				727AF7E2DE4CBED14E351191 /* CalculatorPluginStruct.swift */,
+				62DD2D8E87F061F49D4BFDA0 /* SumCalculationStep.swift */,
+				1BDE4197370E4C1CED683B01 /* Views */,
+				2175159079A5E0D972D06C8C /* Info.plist */,
 			);
 			path = CalculatorPlugin;
 			sourceTree = "<group>";
@@ -132,7 +152,6 @@
 			isa = PBXHeadersBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				B11F5FEA262893DE00EF2283 /* CalculatorPlugin.h in Headers */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -283,8 +302,12 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				B11F601526289B5A00EF2283 /* CalculatorPluginStruct.swift in Sources */,
-				C2796E6D279BD11645523905 /* SumCalculationStep.swift in Sources */,
+				790C14960526FCBB5BAB8F54 /* CalculatorPluginStruct.swift in Sources */,
+				803D864ED39F2CF3F3C66369 /* SumCalculationStep.swift in Sources */,
+				E3EEF3B7398DC66E19B7510B /* SumCalculationTotalView.swift in Sources */,
+				EB7FAAC41D8BA04217584A1B /* SumCalculationCurrencyItemView.swift in Sources */,
+				EB9ABC284EB10DC0E2CC8666 /* SumCalculationNumberItemView.swift in Sources */,
+				990EDFD278FF4AB150CA5CFA /* SumCalculationStepContentView.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

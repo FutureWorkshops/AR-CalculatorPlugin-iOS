@@ -1,0 +1,90 @@
+name: Deploy Preview Podspec
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout plugin
+        uses: actions/checkout@v2
+        with:
+          ssh-key: ${{ secrets.FW_CI_ACCOUNT_SSH }}
+      - name: Extract origin URL
+        id: origin
+        run: |
+          ORIGIN_URL="$(git remote -v | awk '{ print $2; }' | head -1)"
+          echo ::set-output name=url::${ORIGIN_URL}
+      - name: Get Podspec file
+        id: podspec
+        run: |
+          PODSPEC_FILE="$(ls . | grep ".*\.podspec")"
+          PODSPEC_NAME="$(echo "${PODSPEC_FILE}" | cut -f 1 -d '.')"
+          echo ::set-output name=file::${PODSPEC_FILE}
+          echo ::set-output name=name::${PODSPEC_NAME}
+      - name: Extract Tag
+        id: tag
+        env:
+          PODSPEC_FILE: ${{ steps.podspec.outputs.file }}
+          PODSPEC_NAME: ${{ steps.podspec.outputs.name }}
+        run: |
+          VERSION_EXPRESSION='[[:blank:]]*s.version[[:blank:]]*=[[:blank:]]*'
+          VERSION_LINE="$(cat "${PODSPEC_FILE}" | grep -e "${VERSION_EXPRESSION}")"
+
+          CLEAN_VERSION="$(sed "s|${VERSION_EXPRESSION}||g" <<< "${VERSION_LINE}")"
+          CLEAN_VERSION="$(sed "s|'||g" <<< "${CLEAN_VERSION}")"
+          CLEAN_VERSION="$(sed "s|'||g" <<< "${CLEAN_VERSION}")"
+
+          echo "Version: ${CLEAN_VERSION}"
+
+          echo ::set-output name=name::${CLEAN_VERSION}
+      - name: Trigger preview build
+        id: preview
+        env:
+          PLUGIN_NAME: ${{ steps.podspec.outputs.name }}
+          GIT_TAG: ${{ steps.tag.outputs.name }}
+          ORIGIN_URL: ${{ steps.origin.outputs.url }}
+          WORKFLOW_ID: preview
+          APP_ID: ${{ secrets.BITRISE_AR_PLUGIN_BUILD_ID }}
+          TRIGGER_TOKEN: ${{ secrets.BITRISE_BUILD_TRIGGER_TOKEN }}
+        run: |
+          set -e
+          
+          COMMIT_MESSAGE="${PLUGIN_NAME} (${GIT_TAG})"
+          PAYLOAD="{
+              \"hook_info\":
+              {
+                  \"type\": \"bitrise\",
+                  \"build_trigger_token\": \"${TRIGGER_TOKEN}\"
+              },
+              \"build_params\":
+              {
+                  \"branch\": \"main\",
+                  \"workflow_id\": \"${WORKFLOW_ID}\",
+                  \"commit_message\": \"${COMMIT_MESSAGE}\",
+                  \"environments\":
+                  [
+                      {
+                          \"mapped_to\": \"PROJECT_GIT_URL\",
+                          \"value\": \"${ORIGIN_URL}\",
+                          \"is_expand\": true
+                      },
+                      {
+                          \"mapped_to\": \"PROJECT_GIT_TAG\",
+                          \"value\": \"${GIT_TAG}\",
+                          \"is_expand\": true
+                      },
+                      {
+                          \"mapped_to\": \"PROJECT_COMMIT_HASH\",
+                          \"value\": \"${GITHUB_SHA}\",
+                          \"is_expand\": true
+                      }
+                  ]
+              },
+              \"triggered_by\": \"${COMMIT_MESSAGE}\"
+          }"
+
+          curl --fail -X POST "https://app.bitrise.io/app/${APP_ID}/build/start.json" --data "${PAYLOAD}"
