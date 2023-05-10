@@ -99,7 +99,7 @@ struct SumCalculationResponse: Codable {
 public class CalculatorSumCalculationMetadata: StepMetadata {
     enum CodingKeys: String, CodingKey {
         case items
-        case sumCalculationType = "type"
+        case sumCalculationType
         case allowUserToAddItems
         case currencyCode
         case text
@@ -111,9 +111,9 @@ public class CalculatorSumCalculationMetadata: StepMetadata {
     let currencyCode: String?
     let text: String?
 
-    init(id: String, title: String, items: [CalculatorSumCalculationItem], type: String, allowUserToAddItems: Bool?, currencyCode: String?, text: String?, next: PushLinkMetadata?, links: [LinkMetadata]) {
+    init(id: String, title: String, items: [CalculatorSumCalculationItem], sumCalculationType: String, allowUserToAddItems: Bool?, currencyCode: String?, text: String?, next: PushLinkMetadata?, links: [LinkMetadata]) {
         self.items = items
-        self.sumCalculationType = type
+        self.sumCalculationType = sumCalculationType
         self.allowUserToAddItems = allowUserToAddItems
         self.currencyCode = currencyCode
         self.text = text
@@ -142,12 +142,12 @@ public class CalculatorSumCalculationMetadata: StepMetadata {
 }
 
 public extension StepMetadata {
-    static func calculatorSumCalculation(id: String, title: String, items: [CalculatorSumCalculationItem], type: String, allowUserToAddItems: Bool? = nil, currencyCode: String? = nil, text: String? = nil, next: PushLinkMetadata? = nil, links: [LinkMetadata] = []) -> CalculatorSumCalculationMetadata {
+    static func calculatorSumCalculation(id: String, title: String, items: [CalculatorSumCalculationItem], sumCalculationType: String, allowUserToAddItems: Bool? = nil, currencyCode: String? = nil, text: String? = nil, next: PushLinkMetadata? = nil, links: [LinkMetadata] = []) -> CalculatorSumCalculationMetadata {
         CalculatorSumCalculationMetadata(
             id: id,
             title: title,
             items: items,
-            type: type,
+            sumCalculationType: sumCalculationType,
             allowUserToAddItems: allowUserToAddItems,
             currencyCode: currencyCode,
             text: text,

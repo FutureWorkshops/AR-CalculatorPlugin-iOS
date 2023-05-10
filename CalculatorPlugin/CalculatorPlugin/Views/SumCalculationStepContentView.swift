@@ -42,20 +42,20 @@ struct SumCalculationStepContentView: View {
                             HStack(alignment: .center) {
                                 Spacer()
                                 Image(systemName: "plus")
-                                Text("Add Item")
+                                Text(step.resolve("Add Item"))
                                 Spacer()
                             }
                         }
-                        .alert("Add Item", isPresented: $presentAlert, actions: {
-                            TextField("Name", text: $nextItemText)
-                            Button("Cancel", role: .cancel, action: {
+                        .alert(step.resolve("Add Item"), isPresented: $presentAlert, actions: {
+                            TextField(step.resolve("Name"), text: $nextItemText)
+                            Button(step.resolve("Cancel"), role: .cancel, action: {
                                 presentAlert = false
                             })
-                            Button("Add", action: {
+                            Button(step.resolve("Add"), action: {
                                 items.append(CalculatorSumCalculationItem(text: nextItemText))
                             })
                         }, message: {
-                            Text("Add a new item to the calculation.")
+                            Text(step.resolve("Add a new item to the calculation."))
                         })
                     }
                 }
@@ -98,7 +98,24 @@ struct SumCalculationStepContentViewPreviews: PreviewProvider {
                         CalculatorSumCalculationItem(text: "Removal Fees"),
                         CalculatorSumCalculationItem(text: "Conveyancing")
                     ],
-                    type: SumCalculationType.currency.rawValue,
+                    sumCalculationType: SumCalculationType.currency.rawValue,
+                    allowUserToAddItems: true
+                ),
+                session: Session.buildEmptySession(),
+                services: StepServices.buildEmptyServices()
+            )
+        )
+        
+        SumCalculationStepContentView().environmentObject(
+            SumCalculationStep(
+                properties: .calculatorSumCalculation(
+                    id: "SumCalculationStep",
+                    title: "Calculator",
+                    items: [
+                        CalculatorSumCalculationItem(text: "Removal Fees"),
+                        CalculatorSumCalculationItem(text: "Conveyancing")
+                    ],
+                    sumCalculationType: SumCalculationType.number.rawValue,
                     allowUserToAddItems: true
                 ),
                 session: Session.buildEmptySession(),
