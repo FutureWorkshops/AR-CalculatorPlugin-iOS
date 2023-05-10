@@ -50,9 +50,10 @@ public class SumCalculationStep: ObservableStep, BuildableStepWithMetadata, Equa
     public let properties: CalculatorSumCalculationMetadata
     public var type: SumCalculationType { SumCalculationType(rawValue: properties.sumCalculationType) ?? .number }
     public var allowUserToAddItems: Bool { properties.allowUserToAddItems ?? false }
+    public var editMode: EditMode = .inactive
     
     public static func == (lhs: SumCalculationStep, rhs: SumCalculationStep) -> Bool {
-        lhs.identifier == rhs.identifier && lhs.properties.items == rhs.properties.items
+        lhs.identifier == rhs.identifier && lhs.properties.items == rhs.properties.items && lhs.editMode == rhs.editMode
     }
     
     public required init(properties: CalculatorSumCalculationMetadata, session: Session, services: StepServices) {
@@ -75,6 +76,18 @@ public class SumCalculationStepViewController: MWStepViewController {
             rootView: SumCalculationStepContentView().environmentObject(self.sumCalculationStep)
         ))
     }
+    
+    public override func updateBarButtonItems() {
+        super.updateBarButtonItems()
+        var items = self.navigationItem.rightBarButtonItems
+        items?.append(self.editButtonItem)
+        self.navigationItem.rightBarButtonItems = items
+    }
+    
+    public override func setEditing(_ editing: Bool, animated: Bool) {
+        super.setEditing(editing, animated: animated)
+        //TODO: Link edit mode to underlying view
+    }
 }
 
 struct SumCalculationStepContentView: View {
@@ -84,6 +97,7 @@ struct SumCalculationStepContentView: View {
     @State private var nextItemText = ""
     @State private var items: [CalculatorSumCalculationItem] = []
     @State private var total: Double = 0
+    @State var editMode: EditMode = .inactive
 
     var body: some View {
         VStack(alignment: .leading) {
@@ -134,7 +148,7 @@ struct SumCalculationStepContentView: View {
                         SumCalculationTotalView(type: step.type, total: total)
                     }
                 }
-            }
+            }.environment(\.editMode, $editMode)
         }
         .background(Color(UIColor.quaternarySystemFill))
         .task { loadItems() }
