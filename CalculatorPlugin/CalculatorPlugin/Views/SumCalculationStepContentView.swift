@@ -78,6 +78,9 @@ struct SumCalculationStepContentView: View {
                     }
                 }
             }
+            if navigator.hasNextStep {
+                ARButton(title: step.resolve("Next"), action: self.continue).padding(.vertical)
+            }
         }
         .background(Color(UIColor.quaternarySystemFill))
         .onChange(of: items, perform: calculateTotal(items:))
@@ -99,16 +102,17 @@ struct SumCalculationStepContentView: View {
     }
     
     private func loadItems() {
-        items = step.properties.items
+        if items.isEmpty { items = step.properties.items }
     }
     
     private func calculateTotal(items: [CalculatorSumCalculationItem]) {
         total = items.reduce(0, { $0 + $1.value })
     }
     
-    @MainActor
-    @Sendable private func select(item: CalculatorSumCalculationItem) async {
-        await navigator.continue(encoding: SumCalculationResponse(items: items, total: total))
+    private func `continue`() {
+        Task {
+            await navigator.continue(result: SumCalculationResponse(identifier: step.identifier, items: items, total: total))
+        }
     }
 }
 

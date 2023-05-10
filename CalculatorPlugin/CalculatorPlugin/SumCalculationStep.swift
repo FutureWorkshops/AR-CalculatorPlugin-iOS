@@ -10,7 +10,7 @@ import SwiftUI
 import UIKit
 import CurrencyText
 
-public struct CalculatorSumCalculationItem: Codable, Identifiable, Equatable, CustomStringConvertible {
+public struct CalculatorSumCalculationItem: Codable, Identifiable, Equatable, StringConvertableValue {
     enum CodingKeys: String, CodingKey {
         case id
         case text
@@ -21,9 +21,7 @@ public struct CalculatorSumCalculationItem: Codable, Identifiable, Equatable, Cu
     public let text: String
     public var value: Double
     
-    public var description: String {
-        "\(text): \(value)"
-    }
+    public var stringValue: String { "\(text): \(value)" }
     
     init(text: String, id: String = UUID().uuidString, value: Double = 0.0) {
         self.id = id
@@ -127,9 +125,36 @@ internal extension CurrencyFormatter {
     }
 }
 
-struct SumCalculationResponse: Codable {
-    let items: [CalculatorSumCalculationItem]
-    let total: Double
+public class SumCalculationResponse: Codable, StepResult, ValueProvider, JSONRepresentable {
+    public var identifier: String
+    public let items: [CalculatorSumCalculationItem]
+    public let total: Double
+    
+    public var jsonContent: String? {
+        if let data = try? JSONEncoder().encode(self) {
+            return String(data: data, encoding: .utf8)
+        } else {
+            return nil
+        }
+    }
+    
+    init(identifier: String, items: [CalculatorSumCalculationItem], total: Double) {
+        self.identifier = identifier
+        self.items = items
+        self.total = total
+    }
+    
+    public func fetchValue(for path: String) -> Any? {
+        switch path {
+        case "items": return self.items
+        case "total": return self.total
+        default: return nil
+        }
+    }
+    
+    public func fetchProvider(for path: String) -> ValueProvider? {
+        return self.fetchValue(for: path) as? ValueProvider
+    }
 }
 
 // MARK: - Step properties configuration
