@@ -102,7 +102,7 @@ struct SumCalculationStepContentView: View {
                     if(step.allowUserToAddItems) {
                         Button {
                             nextItemText = ""
-                            presentAlert.toggle()
+                            presentAlert = true
                         } label: {
                             HStack(alignment: .center) {
                                 Spacer()
@@ -113,8 +113,9 @@ struct SumCalculationStepContentView: View {
                         }
                         .alert("Add Item", isPresented: $presentAlert, actions: {
                             TextField("Name", text: $nextItemText)
-                            
-                            Button("Cancel", role: .cancel, action: {})
+                            Button("Cancel", role: .cancel, action: {
+                                presentAlert = false
+                            })
                             Button("Add", action: {
                                 items.append(CalculatorSumCalculationItem(text: nextItemText))
                             })
