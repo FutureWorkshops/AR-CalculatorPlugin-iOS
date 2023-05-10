@@ -10,7 +10,7 @@ import SwiftUI
 import UIKit
 import CurrencyText
 
-public struct CalculatorSumCalculationItem: Codable, Identifiable {
+public struct CalculatorSumCalculationItem: Codable, Identifiable, Equatable {
     enum CodingKeys: String, CodingKey {
         case id
         case text
@@ -20,7 +20,7 @@ public struct CalculatorSumCalculationItem: Codable, Identifiable {
     public let id: String
     public let text: String
     public var value: Double
-
+    
     init(text: String, id: String = UUID().uuidString, value: Double = 0.0) {
         self.id = id
         self.text = text
@@ -46,15 +46,17 @@ public enum SumCalculationType: String, CaseIterable {
 }
  
 
-public class SumCalculationStep: ObservableStep, BuildableStepWithMetadata {
+public class SumCalculationStep: ObservableStep, BuildableStepWithMetadata, Equatable {
     public let properties: CalculatorSumCalculationMetadata
     public var type: SumCalculationType { SumCalculationType(rawValue: properties.sumCalculationType) ?? .number }
     public var allowUserToAddItems: Bool { properties.allowUserToAddItems ?? false }
-    public var items: [CalculatorSumCalculationItem]
-
+    
+    public static func == (lhs: SumCalculationStep, rhs: SumCalculationStep) -> Bool {
+        lhs.identifier == rhs.identifier && lhs.properties.items == rhs.properties.items
+    }
+    
     public required init(properties: CalculatorSumCalculationMetadata, session: Session, services: StepServices) {
         self.properties = properties
-        self.items = properties.items
         super.init(identifier: properties.id, session: session, services: services)
     }
 
@@ -67,13 +69,12 @@ public class SumCalculationStepViewController: MWStepViewController {
     public override var titleMode: StepViewControllerTitleMode { .largeTitle }
     var sumCalculationStep: SumCalculationStep { self.step as! SumCalculationStep }
     
-        public override func viewDidLoad() {
+    public override func viewDidLoad() {
         super.viewDidLoad()
         self.addCovering(childViewController: UIHostingController(
             rootView: SumCalculationStepContentView().environmentObject(self.sumCalculationStep)
         ))
     }
-    
 }
 
 struct SumCalculationStepContentView: View {
@@ -81,9 +82,8 @@ struct SumCalculationStepContentView: View {
     var navigator: Navigator { step.navigator }
     @State private var presentAlert = false
     @State private var nextItemText = ""
-    private var total: Double {
-        step.items.reduce(0, { $0 + $1.value })
-    }
+    @State private var items: [CalculatorSumCalculationItem] = []
+    @State private var total: Double = 0
 
     var body: some View {
         VStack(alignment: .leading) {
@@ -96,7 +96,7 @@ struct SumCalculationStepContentView: View {
                     }
                 }
                 Section {
-                    ForEach($step.items) { $item in
+                    ForEach($items) { $item in
                         SumCalculationCurrencyItemView(item: $item)
                     }
                     if(step.allowUserToAddItems) {
@@ -116,7 +116,7 @@ struct SumCalculationStepContentView: View {
                             
                             Button("Cancel", role: .cancel, action: {})
                             Button("Add", action: {
-                                step.items.append(CalculatorSumCalculationItem(text: nextItemText))
+                                items.append(CalculatorSumCalculationItem(text: nextItemText))
                             })
                         }, message: {
                             Text("Add a new item to the calculation.")
@@ -133,12 +133,27 @@ struct SumCalculationStepContentView: View {
             }
         }
         .background(Color(UIColor.quaternarySystemFill))
+        .task { loadItems() }
+        .onChange(of: items, perform: calculateTotal(items:))
     }
-
+    
+    private func loadItems() {
+        items = step.properties.items
+    }
+    
+    private func calculateTotal(items: [CalculatorSumCalculationItem]) {
+        total = items.reduce(0, { $0 + $1.value })
+    }
+    
     @MainActor
     @Sendable private func select(item: CalculatorSumCalculationItem) async {
-        navigator.continue(selecting: item)
+        await navigator.continue(encoding: SumCalculationResponse(items: items, total: total))
     }
+}
+
+struct SumCalculationResponse: Codable {
+    let items: [CalculatorSumCalculationItem]
+    let total: Double
 }
 
 struct SumCalculationTotalView: View {
