@@ -99,6 +99,9 @@ struct SumCalculationStepContentView: View {
                     ForEach($items) { $item in
                         SumCalculationCurrencyItemView(item: $item)
                     }
+                    .onDelete { indexSet in
+                        items.remove(atOffsets: indexSet)
+                    }
                     if(step.allowUserToAddItems) {
                         Button {
                             nextItemText = ""
