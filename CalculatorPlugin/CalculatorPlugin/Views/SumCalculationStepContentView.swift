@@ -19,6 +19,7 @@ struct SumCalculationStepContentView: View {
     @State private var total: Double = 0.0
     @State private var editMode: EditMode = .inactive
     @State private var animateStateChange: Bool = false
+    @State private var loadedState: Bool = false
     
     private let currencyFormatter: CurrencyFormatter
     private let numberFormatter: NumberFormatter
@@ -96,13 +97,19 @@ struct SumCalculationStepContentView: View {
     }
     
     private func createNewEntry() {
+        let trimmed = nextItemText.trimmingCharacters(in: .whitespacesAndNewlines)
+        nextItemText = ""
+        guard !trimmed.isEmpty else { return }
+        
         animateStateChange = true
-        items.append(CalculatorSumCalculationItem(text: nextItemText))
+        items.append(CalculatorSumCalculationItem(text: trimmed))
         nextItemText = ""
     }
     
     private func loadItems() {
-        if items.isEmpty { items = step.properties.items }
+        guard !loadedState else { return }
+        loadedState = true
+        items = step.properties.items
     }
     
     private func calculateTotal(items: [CalculatorSumCalculationItem]) {
