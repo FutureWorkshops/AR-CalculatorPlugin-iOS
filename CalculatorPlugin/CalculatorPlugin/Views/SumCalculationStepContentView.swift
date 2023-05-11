@@ -23,7 +23,7 @@ struct SumCalculationStepContentView: View {
     private let currencyFormatter: CurrencyFormatter
     private let numberFormatter: NumberFormatter
 
-    init(currencyFormatter: CurrencyFormatter = .default, numberFormatter: NumberFormatter = NumberFormatter()) {
+    init(currencyFormatter: CurrencyFormatter = .default(), numberFormatter: NumberFormatter = NumberFormatter()) {
         self.currencyFormatter = currencyFormatter
         self.numberFormatter = numberFormatter
     }
@@ -31,7 +31,7 @@ struct SumCalculationStepContentView: View {
     var body: some View {
         VStack(alignment: .leading) {
             Form {
-                if let text = step.text {
+                if let text = step.properties.text {
                     HStack(alignment: .top) {
                         Image(systemName: "info.circle")
                             .padding(.top, 3)

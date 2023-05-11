@@ -19,7 +19,7 @@ struct SumCalculationCurrencyItemView: View {
     
     init(
         item: Binding<CalculatorSumCalculationItem>,
-        currencyFormatter: CurrencyFormatter = .default,
+        currencyFormatter: CurrencyFormatter = .default(),
         numberFormatter: NumberFormatter = NumberFormatter(),
         stringResolution: @escaping (String) -> String = { $0 }
     ) {

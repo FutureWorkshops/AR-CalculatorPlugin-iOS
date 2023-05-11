@@ -13,7 +13,7 @@ struct SumCalculationTotalView: View {
     let total: Double
     let currencyFormatter: CurrencyFormatter
     
-    init(type: SumCalculationType, total: Double, currencyFormatter: CurrencyFormatter = .default) {
+    init(type: SumCalculationType, total: Double, currencyFormatter: CurrencyFormatter = .default()) {
         self.type = type
         self.total = total
         self.currencyFormatter = currencyFormatter
