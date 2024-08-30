@@ -1,6 +1,6 @@
 Pod::Spec.new do |s|
   s.name                  = 'CalculatorPlugin'
-    s.version               = '1.1.1'
+    s.version               = '1.1.2'
   s.summary               = 'A plugin for AppRail.'
   s.homepage              = 'https://app-rail.io'
   s.license               = { :type => 'Copyright', :file => 'LICENSE' }
