@@ -1,7 +1,7 @@
 PODS:
-  - CalculatorPlugin (1.1.0):
-    - CalculatorPlugin/Core (= 1.1.0)
-  - CalculatorPlugin/Core (1.1.0):
+  - CalculatorPlugin (1.1.1):
+    - CalculatorPlugin/Core (= 1.1.1)
+  - CalculatorPlugin/Core (1.1.1):
     - CurrencyText
     - MobileWorkflow (~> 2.1.6)
   - CurrencyText (2.2.0):
@@ -33,10 +33,10 @@ EXTERNAL SOURCES:
     :path: CalculatorPlugin.podspec
 
 SPEC CHECKSUMS:
-  CalculatorPlugin: d5e7bc2944b649b496b735d0faa74b60a3a48091
+  CalculatorPlugin: 83919577ea1161ef91cfb79bd27f2bac2ec9291e
   CurrencyText: d6044473043b17e67baeeb35745dc265c026dda0
   MobileWorkflow: 6ee8af165ead23e02251a58c4d3a3e81eb188254
 
-PODFILE CHECKSUM: 14bce7711eb02bff5d68cd51a218f1a7e7fa8dab
+PODFILE CHECKSUM: baf9a24ffb106106ff25443699e68a8cb3a13e82
 
 COCOAPODS: 1.15.2
